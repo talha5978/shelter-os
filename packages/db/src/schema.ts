@@ -39,7 +39,7 @@ export const users = pgTable(
 		fullName: text("full_name").notNull(),
 		phone: text("phone"),
 		address: text("address"),
-		avatarUrl: text("avatar_url"),
+		avatarUrl: jsonb("avatar_url"),
 
 		role: userRoleEnum("role").notNull().default("adopter"),
 
@@ -52,7 +52,7 @@ export const users = pgTable(
 		createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 		updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 	},
-	(table) => [uniqueIndex("users_email_unique").on(table.email), index("users_role_idx").on(table.role)],
+	(table) => [index("users_role_idx").on(table.role)],
 );
 
 export const animals = pgTable(
