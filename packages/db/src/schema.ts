@@ -64,7 +64,7 @@ export const animals = pgTable(
 		name: text("name"),
 		species: speciesEnum("species").notNull().default("other"),
 		breed: text("breed"),
-		age: integer("age"), // in years or months? consider adding unit
+		age: decimal("age", { precision: 5, scale: 2 }), // in years
 		gender: genderEnum("gender").default("unknown"),
 		weight: decimal("weight", { precision: 5, scale: 2 }), // kg
 

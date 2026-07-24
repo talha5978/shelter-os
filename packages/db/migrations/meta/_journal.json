@@ -8,6 +8,13 @@
 			"when": 1784894476705,
 			"tag": "0000_light_jack_flag",
 			"breakpoints": true
+		},
+		{
+			"idx": 1,
+			"version": "7",
+			"when": 1784911201288,
+			"tag": "0001_overrated_hulk",
+			"breakpoints": true
 		}
 	]
 }

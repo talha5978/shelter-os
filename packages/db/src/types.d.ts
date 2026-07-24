@@ -40,7 +40,7 @@ export type NewMedicalRecord = InferInsertModel<typeof db.animalMedicalRecords>;
 export type MediaAsset = {
 	publicId: string;
 	url: string;
-	dataType: "img" | "vid" | "pdf";
+	dataType: "img" | "video" | "pdf";
 };
 
 // Custom Vaccine Type

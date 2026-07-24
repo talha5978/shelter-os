@@ -8,6 +8,7 @@ import helmet from "@fastify/helmet";
 import csrf from "@fastify/csrf-protection";
 import multipart from "@fastify/multipart";
 import { mediaRoutes } from "~/routes/media.routes";
+import { animalsRoutes } from "~/routes/animals.routes";
 
 export async function server(fastify: FastifyInstance) {
 	await fastify.register(errorHandlerPlugin);
@@ -50,4 +51,5 @@ export async function server(fastify: FastifyInstance) {
 
 	await fastify.register(authRoutes, { prefix: "/api/auth" });
 	await fastify.register(mediaRoutes, { prefix: "/api/media" });
+	await fastify.register(animalsRoutes, { prefix: "/api/animals" });
 }
