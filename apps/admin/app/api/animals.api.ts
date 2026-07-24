@@ -1,5 +1,7 @@
+import { queryOptions } from "@tanstack/react-query";
 import type { Animal, AnimalStatus, Gender, MediaAsset, Species } from "@workspace/db";
 import { createApiClient } from "~/api/client";
+import { queryClient } from "~/lib/tanstackQueryClient";
 import type { AllAnimalsResponse } from "~/types/animals";
 import type { ApiResponse } from "~/types/response";
 
@@ -21,10 +23,14 @@ export function createAnimalsApi(client = createApiClient()) {
 			images?: MediaAsset[];
 			videos?: MediaAsset[];
 		}) {
-			return await client.request<ApiResponse<{ animal: Animal }>>("/animals/", {
+			const resp = await client.request<ApiResponse<{ animal: Animal }>>("/animals/", {
 				method: "POST",
 				body: JSON.stringify(data),
 			});
+
+			await queryClient.invalidateQueries({ queryKey: ["all_animals"] });
+
+			return resp;
 		},
 
 		async getAllAnimals({
@@ -42,9 +48,16 @@ export function createAnimalsApi(client = createApiClient()) {
 			if (pageIndex) queryParams.set("page", String(pageIndex));
 			if (pageSize) queryParams.set("size", String(pageSize));
 
-			return await client.request<ApiResponse<AllAnimalsResponse>>(
-				`/animals/${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
-			);
+			const qo = queryOptions<ApiResponse<AllAnimalsResponse>>({
+				queryKey: ["all_animals", queryParams.toString()],
+				queryFn: async () => {
+					return await client.request<ApiResponse<AllAnimalsResponse>>(
+						`/animals/${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
+					);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
 		},
 	};
 }

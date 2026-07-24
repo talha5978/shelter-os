@@ -12,6 +12,7 @@
 		"@hookform/resolvers": "^5.4.0",
 		"@react-router/node": "^8",
 		"@react-router/serve": "^8",
+		"@tanstack/react-query": "^5.101.4",
 		"@workspace/auth": "workspace:*",
 		"@workspace/db": "workspace:*",
 		"class-variance-authority": "^0.7.1",

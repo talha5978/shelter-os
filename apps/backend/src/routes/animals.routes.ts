@@ -128,7 +128,7 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 				.orderBy(desc(animals.createdAt))
 				.limit(limit)
 				.offset(offset);
-			console.log(animalList);
+
 			const totalPages = Math.ceil(Number(total) / limit);
 
 			return reply.success({

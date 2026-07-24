@@ -26,6 +26,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const { q, pageIndex, pageSize } = getPaginationQueryPayload({ request });
 
 	const animalsApi = createAnimalsApi(client);
+
 	const data = await animalsApi.getAllAnimals({
 		search: q,
 		pageIndex,
