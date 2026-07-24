@@ -1,5 +1,6 @@
 import type { Animal, AnimalStatus, Gender, MediaAsset, Species } from "@workspace/db";
 import { createApiClient } from "~/api/client";
+import type { AllAnimalsResponse } from "~/types/animals";
 import type { ApiResponse } from "~/types/response";
 
 export function createAnimalsApi(client = createApiClient()) {
@@ -24,6 +25,26 @@ export function createAnimalsApi(client = createApiClient()) {
 				method: "POST",
 				body: JSON.stringify(data),
 			});
+		},
+
+		async getAllAnimals({
+			search,
+			pageIndex,
+			pageSize,
+		}: {
+			search?: string;
+			pageIndex?: number;
+			pageSize?: number;
+		}) {
+			const queryParams = new URLSearchParams();
+
+			if (search) queryParams.set("search", search);
+			if (pageIndex) queryParams.set("page", String(pageIndex));
+			if (pageSize) queryParams.set("size", String(pageSize));
+
+			return await client.request<ApiResponse<AllAnimalsResponse>>(
+				`/animals/${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
+			);
 		},
 	};
 }

@@ -8,6 +8,7 @@ import { convertExpiresInToSeconds } from "~/utils/time";
 import type { CookieSerializeOptions } from "@fastify/csrf-protection";
 
 export async function authRoutes(fastify: FastifyInstance) {
+	/** Get current admin */
 	fastify.get("/admin/me", { preHandler: adminAuthMiddleware }, async (request, reply) => {
 		return reply.success(
 			{
@@ -17,6 +18,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 		);
 	});
 
+	/** Refresh jwt token */
 	fastify.post("/refresh-token", async (request: FastifyRequest, reply: FastifyReply) => {
 		const refreshToken = request.cookies?.adminRefreshToken;
 
@@ -77,6 +79,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 		}
 	});
 
+	/** Admin sign in */
 	fastify.post(
 		"/admin/signin",
 		{
