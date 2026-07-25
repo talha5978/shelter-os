@@ -23,7 +23,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const client = createApiClient();
 	client.setCookie(cookieHeader);
 
-	const { q, pageIndex, pageSize } = getPaginationQueryPayload({ request });
+	const { q, pageIndex, pageSize } = getPaginationQueryPayload({ request, defaultPageSize: 12 });
 
 	const animalsApi = createAnimalsApi(client);
 

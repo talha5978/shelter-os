@@ -45,8 +45,8 @@ export function createAnimalsApi(client = createApiClient()) {
 			const queryParams = new URLSearchParams();
 
 			if (search) queryParams.set("search", search);
-			if (pageIndex) queryParams.set("page", String(pageIndex));
-			if (pageSize) queryParams.set("size", String(pageSize));
+			if (pageIndex) queryParams.set("pageIndex", String(pageIndex));
+			if (pageSize) queryParams.set("pageSize", String(pageSize));
 
 			const qo = queryOptions<ApiResponse<AllAnimalsResponse>>({
 				queryKey: ["all_animals", queryParams.toString()],
