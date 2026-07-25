@@ -1,5 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
-import type { Animal, AnimalStatus, Gender, MediaAsset, Species } from "@workspace/db";
+import type { Animal, AnimalStatus, Gender, MediaAsset, Medication, Species, Vaccine } from "@workspace/db";
 import { createApiClient } from "~/api/client";
 import { queryClient } from "~/lib/tanstackQueryClient";
 import type { AllAnimalsResponse } from "~/types/animals";
@@ -58,6 +58,30 @@ export function createAnimalsApi(client = createApiClient()) {
 			});
 
 			return await queryClient.fetchQuery(qo);
+		},
+
+		async addMedicalRecord(
+			animalId: string,
+			data: {
+				vaccines: Vaccine[];
+				medications: Medication[];
+				conditions?: string[];
+				nextCheckup: Date | null;
+				notes: string | null;
+			},
+		) {
+			const resp = await client.request<ApiResponse<{ animal: Animal }>>(
+				`/animals/${animalId}/medical`,
+				{
+					method: "POST",
+					body: JSON.stringify(data),
+				},
+			);
+
+			queryClient.invalidateQueries({ queryKey: [`animals:${animalId}`] });
+			queryClient.invalidateQueries({ queryKey: [`animals:${animalId}:medical`] });
+
+			return resp;
 		},
 	};
 }

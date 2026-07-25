@@ -49,3 +49,11 @@ export type Vaccine = {
 	date: Date;
 	description?: string | null;
 };
+
+export type Medication = {
+	name: string;
+	dosage: string;
+	frequency?: string | null;
+	startDate?: Date | null;
+	endDate?: Date | null;
+};

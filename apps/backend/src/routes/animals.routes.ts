@@ -1,5 +1,13 @@
-import { animals, type AnimalStatus, type Gender, type MediaAsset, type Species } from "@workspace/db";
-import { count, desc, ilike, or, sql } from "drizzle-orm";
+import {
+	animalMedicalRecords,
+	animals,
+	type AnimalStatus,
+	type Gender,
+	type MediaAsset,
+	type Species,
+	type Vaccine,
+} from "@workspace/db";
+import { count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { adminAuthMiddleware, requireRole } from "~/middlewares/auth.middleware";
 import { ApiError } from "~/utils/ApiError";
@@ -142,6 +150,57 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 					hasPrev: pageIndex > 1,
 				},
 			});
+		},
+	);
+
+	/** Create an animal's medical record */
+	fastify.post(
+		"/:animalId/medical",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const userId = request.user?.id as string;
+			const { animalId } = request.params as { animalId: string };
+
+			if (!animalId) {
+				throw new ApiError("Animal id is missing", 400, "ANIMAL_ID_REQUIRED");
+			}
+
+			const {
+				vaccines = [],
+				medications = [],
+				conditions = [],
+				nextCheckup,
+				notes,
+			} = request.body as {
+				vaccines?: Vaccine[];
+				medications?: any[];
+				conditions?: string[];
+				nextCheckup?: string | Date | null;
+				notes?: string | null;
+			};
+
+			const animal = await fastify.db.query.animals.findFirst({
+				where: eq(animals.id, animalId),
+			});
+
+			if (!animal) {
+				throw new ApiError("Animal not found", 404, "ANIMAL_NOT_FOUND");
+			}
+
+			const [newRecord] = await fastify.db
+				.insert(animalMedicalRecords)
+				.values({
+					animalId,
+					vaccines: vaccines || [],
+					medications: medications || [],
+					conditions: conditions || [],
+					nextCheckup: nextCheckup ? new Date(nextCheckup) : null,
+					notes: notes || null,
+					createdBy: userId,
+				})
+				.returning();
+
+			return reply.success({ medicalRecord: newRecord }, "Medical record created successfully", 201);
 		},
 	);
 }

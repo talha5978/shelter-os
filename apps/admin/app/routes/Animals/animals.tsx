@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { GetPaginationControls } from "~/utils/PaginationControls";
 import { getPaginationQueryPayload } from "~/utils/PaginationQueryPayload";
 import { AnimalCard } from "~/components/Animals/AnimalCard";
+import { useState } from "react";
+import AddMedicalRecordSheet from "~/components/MedicalRecords/AddMedicalRecordSheet";
 
 export const meta = () => {
 	return [
@@ -40,6 +42,18 @@ export default function AnimalsDirectoryPage() {
 	const loaderData = useLoaderData<typeof loader>();
 	const navigation = useNavigation();
 	const location = useLocation();
+
+	const [medicalSheetOpen, setMedicalSheetOpen] = useState(false);
+	const [selectedAnimal, setSelectedAnimal] = useState<{
+		id: string;
+		name: string;
+		animalId: string;
+	} | null>(null);
+
+	const handleOpenMedicalRecord = (animal: { id: string; name: string; animalId: string }) => {
+		setSelectedAnimal(animal);
+		setMedicalSheetOpen(true);
+	};
 
 	const isFetching = navigation.state === "loading" && navigation.location?.pathname === location.pathname;
 
@@ -77,100 +91,123 @@ export default function AnimalsDirectoryPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col gap-6 p-6 max-w-7xl mx-auto w-full">
-			{/* Header Area */}
-			<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-				<div>
-					<h1 className="text-3xl font-bold tracking-tight">Animals Directory</h1>
-					<p className="text-muted-foreground mt-1 text-sm">
-						Track, manage, and inspect all rescued animals in the shelter system.
-					</p>
-				</div>
-				<Button asChild className="shrink-0 shadow-sm">
-					<Link to="/animals/add">
-						<Plus className="w-4 h-4 mr-2" />
-						Add New Intake
-					</Link>
-				</Button>
-			</div>
-
-			{/* Filter and Search Bar */}
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-				<Form method="get" className="w-full sm:max-w-md">
-					<div className="relative">
-						<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-						<Input
-							placeholder="Search by name, breed, ID, species..."
-							name="q"
-							defaultValue={currentQuery}
-							className="pl-9 w-full bg-background"
-						/>
+		<>
+			<div className="flex-1 flex flex-col gap-6 p-6 max-w-7xl mx-auto w-full">
+				{/* Header Area */}
+				<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+					<div>
+						<h1 className="text-3xl font-bold tracking-tight">Animals Directory</h1>
+						<p className="text-muted-foreground mt-1 text-sm">
+							Track, manage, and inspect all rescued animals in the shelter system.
+						</p>
 					</div>
-				</Form>
+					<Button asChild className="shrink-0 shadow-sm">
+						<Link to="/animals/add">
+							<Plus className="w-4 h-4 mr-2" />
+							Add New Intake
+						</Link>
+					</Button>
+				</div>
 
-				<div className="text-xs text-muted-foreground self-end sm:self-center">
-					Showing <span className="font-semibold text-foreground">{animals.length}</span> of{" "}
-					<span className="font-semibold text-foreground">{pagination?.total ?? 0}</span> animals
+				{/* Filter and Search Bar */}
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+					<Form method="get" className="w-full sm:max-w-md">
+						<div className="relative">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+							<Input
+								placeholder="Search by name, breed, ID, species..."
+								name="q"
+								defaultValue={currentQuery}
+								className="pl-9 w-full bg-background"
+							/>
+						</div>
+					</Form>
+
+					<div className="text-xs text-muted-foreground self-end sm:self-center">
+						Showing <span className="font-semibold text-foreground">{animals.length}</span> of{" "}
+						<span className="font-semibold text-foreground">{pagination?.total ?? 0}</span>{" "}
+						animals
+					</div>
+				</div>
+
+				{/* Grid Content / Loading Skeleton */}
+				{isFetching ? (
+					<AnimalsGridSkeleton />
+				) : animals.length === 0 ? (
+					<EmptyAnimalsState query={currentQuery} />
+				) : (
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+						{animals.map((animal) => (
+							<AnimalCard
+								key={animal.id}
+								animal={animal}
+								onAddMedicalRecord={() =>
+									handleOpenMedicalRecord({
+										id: animal.id,
+										name: animal.name || "Unknown",
+										animalId: animal.animalId,
+									})
+								}
+							/>
+						))}
+					</div>
+				)}
+
+				{/* Pagination Controls */}
+
+				<div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-t border-border/50">
+					<div className="flex items-center gap-2 text-sm text-muted-foreground">
+						<span>Rows per page:</span>
+						<Select
+							value={String(pagination?.pageSize || 12)}
+							onValueChange={(val) => onPageSizeChange(Number(val))}
+						>
+							<SelectTrigger className="h-8 w-18">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="8">8</SelectItem>
+								<SelectItem value="12">12</SelectItem>
+								<SelectItem value="24">24</SelectItem>
+								<SelectItem value="48">48</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className="flex items-center gap-2">
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={!pagination?.hasPrev || !pagination?.hasNext}
+							onClick={() => onPageChange((pagination?.page || 1) - 2)}
+						>
+							Previous
+						</Button>
+						<span className="text-sm font-medium px-2">
+							Page {pagination?.page || 1} of {pagination?.totalPages || 1}
+						</span>
+						<Button
+							variant="outline"
+							size="sm"
+							disabled={!pagination?.hasNext || !pagination?.hasPrev}
+							onClick={() => onPageChange(pagination?.page || 1)}
+						>
+							Next
+						</Button>
+					</div>
 				</div>
 			</div>
 
-			{/* Grid Content / Loading Skeleton */}
-			{isFetching ? (
-				<AnimalsGridSkeleton />
-			) : animals.length === 0 ? (
-				<EmptyAnimalsState query={currentQuery} />
-			) : (
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-					{animals.map((animal) => (
-						<AnimalCard key={animal.id} animal={animal} />
-					))}
-				</div>
+			{/* Medical Record Sheet */}
+			{selectedAnimal && (
+				<AddMedicalRecordSheet
+					open={medicalSheetOpen}
+					onOpenChange={setMedicalSheetOpen}
+					animalName={selectedAnimal.name}
+					animalId={selectedAnimal.id}
+				/>
 			)}
-
-			{/* Pagination Controls */}
-
-			<div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4 border-t border-border/50">
-				<div className="flex items-center gap-2 text-sm text-muted-foreground">
-					<span>Rows per page:</span>
-					<Select
-						value={String(pagination?.pageSize || 12)}
-						onValueChange={(val) => onPageSizeChange(Number(val))}
-					>
-						<SelectTrigger className="h-8 w-18">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							<SelectItem value="8">8</SelectItem>
-							<SelectItem value="12">12</SelectItem>
-							<SelectItem value="24">24</SelectItem>
-							<SelectItem value="48">48</SelectItem>
-						</SelectContent>
-					</Select>
-				</div>
-
-				<div className="flex items-center gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						disabled={!pagination?.hasPrev || !pagination?.hasNext}
-						onClick={() => onPageChange((pagination?.page || 1) - 2)}
-					>
-						Previous
-					</Button>
-					<span className="text-sm font-medium px-2">
-						Page {pagination?.page || 1} of {pagination?.totalPages || 1}
-					</span>
-					<Button
-						variant="outline"
-						size="sm"
-						disabled={!pagination?.hasNext || !pagination?.hasPrev}
-						onClick={() => onPageChange(pagination?.page || 1)}
-					>
-						Next
-					</Button>
-				</div>
-			</div>
-		</div>
+		</>
 	);
 }
 
