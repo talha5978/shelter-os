@@ -33,7 +33,10 @@ export type Foster = InferSelectModel<typeof db.fosters>;
 export type NewFoster = InferInsertModel<typeof db.fosters>;
 
 // Medical Records
-export type MedicalRecord = InferSelectModel<typeof db.animalMedicalRecords>;
+export type MedicalRecord = InferSelectModel<typeof db.animalMedicalRecords> & {
+	vaccines?: Vaccine[];
+	medications?: Medication[];
+};
 export type NewMedicalRecord = InferInsertModel<typeof db.animalMedicalRecords>;
 
 // Custom MediaAsset Type

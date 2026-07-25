@@ -95,13 +95,7 @@ function getStatusBadge(status: string) {
 
 type AnimalItem = AllAnimalsResponse["animals"][number];
 
-export function AnimalCard({
-	animal,
-	onAddMedicalRecord,
-}: {
-	animal: AnimalItem;
-	onAddMedicalRecord?: () => void;
-}) {
+export function AnimalCard({ animal }: { animal: AnimalItem }) {
 	const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 	const photos = animal.photos ?? [];
 	const hasPhotos = photos.length > 0;
@@ -200,10 +194,8 @@ export function AnimalCard({
 								<DropdownMenuItem asChild>
 									<Link to={`/animals/${animal.id}/edit`}>Edit Profile</Link>
 								</DropdownMenuItem>
-								<DropdownMenuItem
-									onClick={onAddMedicalRecord ? () => onAddMedicalRecord() : undefined}
-								>
-									Medical Records
+								<DropdownMenuItem asChild>
+									<Link to={`/animals/${animal.id}/medical-records`}>Medical Records</Link>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>

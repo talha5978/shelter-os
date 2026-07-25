@@ -1,9 +1,19 @@
 import { queryOptions } from "@tanstack/react-query";
-import type { Animal, AnimalStatus, Gender, MediaAsset, Medication, Species, Vaccine } from "@workspace/db";
+import type {
+	Animal,
+	AnimalStatus,
+	Gender,
+	MediaAsset,
+	MedicalRecord,
+	Medication,
+	Species,
+	Vaccine,
+} from "@workspace/db";
 import { createApiClient } from "~/api/client";
 import { queryClient } from "~/lib/tanstackQueryClient";
 import type { AllAnimalsResponse } from "~/types/animals";
 import type { ApiResponse } from "~/types/response";
+import { invalidateCache } from "~/utils/invalidate";
 
 export function createAnimalsApi(client = createApiClient()) {
 	return {
@@ -28,7 +38,7 @@ export function createAnimalsApi(client = createApiClient()) {
 				body: JSON.stringify(data),
 			});
 
-			await queryClient.invalidateQueries({ queryKey: ["all_animals"] });
+			await invalidateCache("all_animals");
 
 			return resp;
 		},
@@ -78,10 +88,28 @@ export function createAnimalsApi(client = createApiClient()) {
 				},
 			);
 
-			queryClient.invalidateQueries({ queryKey: [`animals:${animalId}`] });
-			queryClient.invalidateQueries({ queryKey: [`animals:${animalId}:medical`] });
+			await invalidateCache(`medical-records:${animalId}`);
 
 			return resp;
+		},
+
+		async getMedicalRecords(animalId: string) {
+			type ReturnType = ApiResponse<{
+				records: MedicalRecord[];
+				animal: {
+					id: string;
+					name: string;
+					animalId: string;
+				};
+			}>;
+			const qo = queryOptions<ReturnType>({
+				queryKey: [`medical-records:${animalId}`],
+				queryFn: async () => {
+					return await client.request<ReturnType>(`/animals/${animalId}/medical`);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
 		},
 	};
 }

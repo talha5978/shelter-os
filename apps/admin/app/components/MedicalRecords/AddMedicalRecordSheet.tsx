@@ -32,6 +32,7 @@ import { Card } from "~/components/ui/card";
 import { Separator } from "~/components/ui/separator";
 import { createAnimalsApi } from "~/api/animals.api";
 import { toast } from "sonner";
+import { useRevalidator } from "react-router";
 
 const vaccineSchema = z.object({
 	name: z.string().min(1, "Vaccine name is required"),
@@ -72,6 +73,7 @@ export default function AddMedicalRecordSheet({
 }: AddMedicalRecordSheetProps) {
 	const [conditionInput, setConditionInput] = useState("");
 	const [isSaving, setIsSaving] = useState(false);
+	const revalidator = useRevalidator();
 
 	const form = useForm<MedicalRecordFormValues>({
 		resolver: zodResolver(medicalRecordSchema),
@@ -162,6 +164,7 @@ export default function AddMedicalRecordSheet({
 				toast.success("Medical record added successfully!");
 				form.reset();
 				onOpenChange(false);
+				revalidator.revalidate();
 			} else {
 				console.log(response.error);
 				toast.error(response.error?.message || "Something went wrong. Please try again.");

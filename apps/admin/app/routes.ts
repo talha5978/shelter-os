@@ -9,6 +9,9 @@ export default [
 		...prefix("animals", [
 			index("./routes/Animals/animals.tsx"),
 			route("add", "./routes/Animals/add-animal.tsx"),
+			route(":animalId/medical-records", "./routes/Animals/medical-records.tsx"),
 		]),
+
+		route("invalidate", "./routes/invalidate.ts"),
 	]),
 ] satisfies RouteConfig;

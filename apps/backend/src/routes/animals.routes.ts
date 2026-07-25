@@ -203,4 +203,51 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			return reply.success({ medicalRecord: newRecord }, "Medical record created successfully", 201);
 		},
 	);
+
+	/** Get an animal's medical record */
+	fastify.get(
+		"/:animalId/medical",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { animalId } = request.params as { animalId: string };
+
+			if (!animalId) {
+				throw new ApiError("Animal id is missing", 400, "ANIMAL_ID_REQUIRED");
+			}
+
+			const [animal] = await fastify.db
+				.select({
+					id: animals.id,
+					name: animals.name,
+					animalId: animals.animalId,
+				})
+				.from(animals)
+				.where(eq(animals.id, animalId))
+				.limit(1);
+
+			if (!animal) {
+				throw new ApiError("Animal not found", 400);
+			}
+
+			const records = await fastify.db
+				.select()
+				.from(animalMedicalRecords)
+				.where(eq(animalMedicalRecords.animalId, animalId))
+				.orderBy(desc(animalMedicalRecords.createdAt))
+				.limit(20);
+
+			return reply.success(
+				{
+					records,
+					animal: {
+						id: animal.id,
+						name: animal.name,
+						animalId: animal.animalId,
+					},
+				},
+				"Medical record fetched successfully",
+				201,
+			);
+		},
+	);
 }

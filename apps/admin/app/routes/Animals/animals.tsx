@@ -10,8 +10,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { GetPaginationControls } from "~/utils/PaginationControls";
 import { getPaginationQueryPayload } from "~/utils/PaginationQueryPayload";
 import { AnimalCard } from "~/components/Animals/AnimalCard";
-import { useState } from "react";
-import AddMedicalRecordSheet from "~/components/MedicalRecords/AddMedicalRecordSheet";
 
 export const meta = () => {
 	return [
@@ -42,18 +40,6 @@ export default function AnimalsDirectoryPage() {
 	const loaderData = useLoaderData<typeof loader>();
 	const navigation = useNavigation();
 	const location = useLocation();
-
-	const [medicalSheetOpen, setMedicalSheetOpen] = useState(false);
-	const [selectedAnimal, setSelectedAnimal] = useState<{
-		id: string;
-		name: string;
-		animalId: string;
-	} | null>(null);
-
-	const handleOpenMedicalRecord = (animal: { id: string; name: string; animalId: string }) => {
-		setSelectedAnimal(animal);
-		setMedicalSheetOpen(true);
-	};
 
 	const isFetching = navigation.state === "loading" && navigation.location?.pathname === location.pathname;
 
@@ -138,17 +124,7 @@ export default function AnimalsDirectoryPage() {
 				) : (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 						{animals.map((animal) => (
-							<AnimalCard
-								key={animal.id}
-								animal={animal}
-								onAddMedicalRecord={() =>
-									handleOpenMedicalRecord({
-										id: animal.id,
-										name: animal.name || "Unknown",
-										animalId: animal.animalId,
-									})
-								}
-							/>
+							<AnimalCard key={animal.id} animal={animal} />
 						))}
 					</div>
 				)}
@@ -197,16 +173,6 @@ export default function AnimalsDirectoryPage() {
 					</div>
 				</div>
 			</div>
-
-			{/* Medical Record Sheet */}
-			{selectedAnimal && (
-				<AddMedicalRecordSheet
-					open={medicalSheetOpen}
-					onOpenChange={setMedicalSheetOpen}
-					animalName={selectedAnimal.name}
-					animalId={selectedAnimal.id}
-				/>
-			)}
 		</>
 	);
 }
