@@ -22,3 +22,31 @@ export type AllAnimalsResponse = {
 		hasPrev: boolean;
 	};
 };
+
+export type AllMedicalRecordsResp = {
+	animals: {
+		id: string;
+		animalId: string;
+		name: string | null;
+		photos: MediaAsset[] | null;
+		species: Species;
+		nextCheckup: Date | null;
+		activeConditions: string[];
+		conditionsCount: number;
+		checkupStatus: "overdue" | "upcoming" | "none";
+		updatedAt: Date;
+	}[];
+	stats: {
+		total: number;
+		overdue: number;
+		upcoming: number;
+	};
+	pagination: {
+		page: number;
+		pageSize: number;
+		total: number;
+		totalPages: number;
+		hasNext: boolean;
+		hasPrev: boolean;
+	};
+};

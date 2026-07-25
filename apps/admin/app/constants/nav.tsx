@@ -14,7 +14,7 @@ export const navLinks: NavItem[] = [
 	},
 	{
 		title: "Medical Records",
-		url: "/medical",
+		url: "/medical-records",
 		icon: <PlusCircle size={18} />,
 	},
 	{

@@ -12,6 +12,8 @@ export default [
 			route(":animalId/medical-records", "./routes/Animals/medical-records.tsx"),
 		]),
 
+		route("medical-records", "./routes/Animals/all-medical-records.tsx"),
+
 		route("invalidate", "./routes/invalidate.ts"),
 	]),
 ] satisfies RouteConfig;

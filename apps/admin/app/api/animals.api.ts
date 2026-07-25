@@ -11,7 +11,7 @@ import type {
 } from "@workspace/db";
 import { createApiClient } from "~/api/client";
 import { queryClient } from "~/lib/tanstackQueryClient";
-import type { AllAnimalsResponse } from "~/types/animals";
+import type { AllAnimalsResponse, AllMedicalRecordsResp } from "~/types/animals";
 import type { ApiResponse } from "~/types/response";
 import { invalidateCache } from "~/utils/invalidate";
 
@@ -89,11 +89,12 @@ export function createAnimalsApi(client = createApiClient()) {
 			);
 
 			await invalidateCache(`medical-records:${animalId}`);
+			await invalidateCache("all-medical-records");
 
 			return resp;
 		},
 
-		async getMedicalRecords(animalId: string) {
+		async getMedicalRecordsById(animalId: string) {
 			type ReturnType = ApiResponse<{
 				records: MedicalRecord[];
 				animal: {
@@ -106,6 +107,33 @@ export function createAnimalsApi(client = createApiClient()) {
 				queryKey: [`medical-records:${animalId}`],
 				queryFn: async () => {
 					return await client.request<ReturnType>(`/animals/${animalId}/medical`);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
+		},
+
+		async getMedicalRecords({
+			search,
+			pageIndex,
+			pageSize,
+		}: {
+			search?: string;
+			pageIndex?: number;
+			pageSize?: number;
+		}) {
+			const queryParams = new URLSearchParams();
+
+			if (search) queryParams.set("search", search);
+			if (pageIndex) queryParams.set("pageIndex", String(pageIndex));
+			if (pageSize) queryParams.set("pageSize", String(pageSize));
+
+			const qo = queryOptions<ApiResponse<AllMedicalRecordsResp>>({
+				queryKey: [`all-medical-records`, queryParams.toString()],
+				queryFn: async () => {
+					return await client.request<ApiResponse<AllMedicalRecordsResp>>(
+						`/animals/medical${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
+					);
 				},
 			});
 

@@ -71,7 +71,7 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 	}
 
 	const animalsApi = createAnimalsApi(client);
-	const result = await animalsApi.getMedicalRecords(animalId);
+	const result = await animalsApi.getMedicalRecordsById(animalId);
 	console.log(result);
 	return {
 		...result,

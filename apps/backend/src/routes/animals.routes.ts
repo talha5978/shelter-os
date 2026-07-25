@@ -106,6 +106,7 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			const searchCondition = search.trim()
 				? or(
 						ilike(animals.name, `%${search}%`),
+						ilike(animals.animalId, `%${search}%`),
 						ilike(animals.foundLocation, `%${search}%`),
 						ilike(animals.description, `%${search}%`),
 					)
@@ -247,6 +248,111 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 				},
 				"Medical record fetched successfully",
 				201,
+			);
+		},
+	);
+
+	/** Get animals record for main medical route */
+	fastify.get(
+		"/medical",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const {
+				pageIndex: rPageIndex = "1",
+				pageSize = "12",
+				search = "",
+			} = request.query as {
+				pageIndex?: string;
+				pageSize?: string;
+				search?: string;
+			};
+
+			const pageIndex = Math.max(1, parseInt(rPageIndex));
+			const limit = Math.min(50, parseInt(pageSize));
+			const offset = (pageIndex - 1) * limit;
+
+			const searchCondition = search.trim()
+				? or(ilike(animals.name, `%${search}%`), ilike(animals.animalId, `%${search}%`))
+				: undefined;
+
+			// Get total count of animals that have medical records
+			const [{ count: total }] = await fastify.db
+				.select({ count: count() })
+				.from(animals)
+				.innerJoin(animalMedicalRecords, eq(animals.id, animalMedicalRecords.animalId))
+				.where(searchCondition);
+
+			const results = await fastify.db
+				.select({
+					id: animals.id,
+					animalId: animals.animalId,
+					name: animals.name,
+					photos: animals.photos,
+					species: animals.species,
+					nextCheckup: animalMedicalRecords.nextCheckup,
+					conditions: animalMedicalRecords.conditions,
+					recordId: animalMedicalRecords.id,
+					updatedAt: animalMedicalRecords.updatedAt,
+				})
+				.from(animals)
+				.innerJoin(animalMedicalRecords, eq(animals.id, animalMedicalRecords.animalId))
+				.where(searchCondition)
+				.orderBy(desc(animalMedicalRecords.updatedAt))
+				.limit(limit)
+				.offset(offset);
+
+			const now = new Date();
+			const animalsWithMedical = results.map((item) => {
+				const conditions = item.conditions || [];
+				const nextCheckup = item.nextCheckup ? new Date(item.nextCheckup) : null;
+
+				let checkupStatus: "overdue" | "upcoming" | "none" = "none";
+				if (nextCheckup) {
+					if (nextCheckup < now) {
+						checkupStatus = "overdue";
+					} else {
+						checkupStatus = "upcoming";
+					}
+				}
+
+				return {
+					id: item.id,
+					animalId: item.animalId,
+					name: item.name,
+					photos: item.photos,
+					species: item.species,
+					nextCheckup: item.nextCheckup,
+					activeConditions: conditions, // take all for now, or conditions[0] if you only want the first
+					conditionsCount: conditions.length,
+					checkupStatus,
+					updatedAt: item.updatedAt,
+				};
+			});
+
+			// Summary stats
+			const overdueCount = animalsWithMedical.filter((a) => a.checkupStatus === "overdue").length;
+			const upcomingCount = animalsWithMedical.filter((a) => a.checkupStatus === "upcoming").length;
+
+			const totalPages = Math.ceil(Number(total) / limit);
+
+			return reply.success(
+				{
+					animals: animalsWithMedical,
+					stats: {
+						total: Number(total),
+						overdue: overdueCount,
+						upcoming: upcomingCount,
+					},
+					pagination: {
+						page: pageIndex,
+						pageSize: limit,
+						total: Number(total),
+						totalPages,
+						hasNext: pageIndex < totalPages,
+						hasPrev: pageIndex > 1,
+					},
+				},
+				"Medical records fetched successfully",
 			);
 		},
 	);
