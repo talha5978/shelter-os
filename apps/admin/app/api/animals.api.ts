@@ -139,5 +139,30 @@ export function createAnimalsApi(client = createApiClient()) {
 
 			return await queryClient.fetchQuery(qo);
 		},
+
+		async addTimeline(
+			animalId: string,
+			data: {
+				eventType: string;
+				description: string;
+				eventDate: string;
+				metadata: {
+					location?: string;
+					associatedPerson?: string;
+					referenceCodeOrBatch?: string;
+					numericValue?: unknown;
+				};
+			},
+		) {
+			const resp = await client.request<ApiResponse<{ animal: Animal }>>(
+				`/animals/${animalId}/timeline`,
+				{
+					method: "POST",
+					body: JSON.stringify(data),
+				},
+			);
+
+			return resp;
+		},
 	};
 }

@@ -10,6 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { GetPaginationControls } from "~/utils/PaginationControls";
 import { getPaginationQueryPayload } from "~/utils/PaginationQueryPayload";
 import { AnimalCard } from "~/components/Animals/AnimalCard";
+import { useState } from "react";
+import { AddTimelineEventSheet } from "~/components/Timeline/AddTimelineEventSheet";
+import { invalidateCache } from "~/utils/invalidate";
 
 export const meta = () => {
 	return [
@@ -50,6 +53,9 @@ export default function AnimalsDirectoryPage() {
 
 	const { onPageChange, onPageSizeChange } = GetPaginationControls({});
 
+	const [open, setOpen] = useState(false);
+	const [animalId, setAnimalId] = useState<string | null>(null);
+
 	if (!loaderData.success) {
 		const error = loaderData.error;
 		return (
@@ -63,7 +69,7 @@ export default function AnimalsDirectoryPage() {
 						{error?.message || "Something went wrong while retrieving animal records."}
 					</p>
 					<div className="flex flex-col sm:flex-row gap-3 justify-center">
-						<Button onClick={() => window.location.reload()} variant="default">
+						<Button onClick={() => invalidateCache("all_animals")} variant="default">
 							<RefreshCw className="mr-2 h-4 w-4" />
 							Retry
 						</Button>
@@ -124,7 +130,14 @@ export default function AnimalsDirectoryPage() {
 				) : (
 					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 						{animals.map((animal) => (
-							<AnimalCard key={animal.id} animal={animal} />
+							<AnimalCard
+								key={animal.id}
+								animal={animal}
+								onAnimalSelect={() => {
+									setOpen(true);
+									setAnimalId(animal.id);
+								}}
+							/>
 						))}
 					</div>
 				)}
@@ -173,6 +186,7 @@ export default function AnimalsDirectoryPage() {
 					</div>
 				</div>
 			</div>
+			{animalId && <AddTimelineEventSheet animalId={animalId} open={open} onOpenChange={setOpen} />}
 		</>
 	);
 }

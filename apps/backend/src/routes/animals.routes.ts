@@ -1,6 +1,7 @@
 import {
 	animalMedicalRecords,
 	animals,
+	animalTimeline,
 	type AnimalStatus,
 	type Gender,
 	type MediaAsset,
@@ -353,6 +354,71 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 					},
 				},
 				"Medical records fetched successfully",
+			);
+		},
+	);
+
+	/** Add timeline entry for an animal */
+	fastify.post(
+		"/:animalId/timeline",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const userId = request.user?.id as string;
+			const { animalId } = request.params as { animalId: string };
+
+			const {
+				eventType,
+				description,
+				eventDate,
+				metadata = {},
+			} = request.body as {
+				eventType: string;
+				description: string;
+				eventDate: string;
+				metadata?: unknown;
+			};
+
+			if (!animalId) {
+				throw new ApiError("Animal ID is required", 400, "ANIMAL_ID_REQUIRED");
+			}
+
+			if (!eventType || !description) {
+				throw new ApiError("eventType and description are required", 400, "MISSING_FIELDS");
+			}
+
+			const animal = await fastify.db.query.animals.findFirst({
+				where: eq(animals.id, animalId),
+				columns: {
+					id: true,
+					name: true,
+					animalId: true,
+				},
+			});
+
+			if (!animal) {
+				throw new ApiError("Animal not found", 404, "ANIMAL_NOT_FOUND");
+			}
+
+			// Create timeline entry
+			const [newTimeline] = await fastify.db
+				.insert(animalTimeline)
+				.values({
+					animalId,
+					eventType,
+					description,
+					eventDate: eventDate ? new Date(eventDate) : new Date(),
+					createdBy: userId,
+					metadata: metadata || {},
+				})
+				.returning();
+
+			return reply.success(
+				{
+					timeline: newTimeline,
+					animal,
+				},
+				"Timeline entry added successfully",
+				201,
 			);
 		},
 	);
