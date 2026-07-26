@@ -126,22 +126,6 @@ export function TimelineHistorySheet({ animalId, open, onOpenChange }: TimelineH
 	const timelineList = timeLineData.success ? timeLineData.data.timeline : [];
 	const isError = !timeLineData.success;
 
-	// const animalsApi = createAnimalsApi();
-
-	// // Fetch timeline using TanStack Query
-	// const { data, isLoading, isError, refetch } = useQuery({
-	// 	queryKey: ["timeline", animalId],
-	// 	queryFn: async () => {
-	// 		const resp = await animalsApi.getTimelineHistory(animalId);
-	// 		return resp.success ? resp.data : null;
-	// 	},
-	// 	enabled: open && Boolean(animalId),
-	// 	staleTime: 1000 * 60 * 2, // 2 minutes cache
-	// });
-
-	// const animal = data?.animal;
-	// const timelineList = data?.timeline ?? [];
-
 	const [addSheetOpen, setAddSheetOpen] = useState(false);
 
 	return (
@@ -224,7 +208,7 @@ export function TimelineHistorySheet({ animalId, open, onOpenChange }: TimelineH
 											<div key={item.id} className="relative group">
 												{/* Visual Timeline Dot */}
 												<div
-													className={`absolute -left-6 top-4 w-3 h-3 rounded-full border-2 border-background z-10 ${config.bgAccent}`}
+													className={`absolute left-[-1.19rem] top-4 w-3 h-3 rounded-full border-2 border-background z-10 bg-border`}
 												/>
 
 												<AccordionItem
