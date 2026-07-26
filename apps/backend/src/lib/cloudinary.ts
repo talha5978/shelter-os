@@ -33,8 +33,8 @@ export const uploadToCloudinary = async ({
 				folder,
 				transformation: [
 					{
-						width: options.width || 400,
-						height: options.height || 400,
+						// width: options.width || 400,
+						// height: options.height || 400,
 						crop: options.crop || "fill",
 						gravity: "face",
 					},

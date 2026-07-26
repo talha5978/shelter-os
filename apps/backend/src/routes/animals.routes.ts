@@ -84,6 +84,79 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 		},
 	);
 
+	/** Update an existing animal profile */
+	fastify.put(
+		"/:id",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { id } = request.params as { id: string };
+
+			const [existingAnimal] = await fastify.db
+				.select()
+				.from(animals)
+				.where(eq(animals.id, id))
+				.limit(1);
+
+			if (!existingAnimal) {
+				throw new ApiError("Animal record not found", 404);
+			}
+
+			const {
+				name,
+				species,
+				breed,
+				age,
+				gender,
+				weight,
+				foundLocation,
+				description,
+				personality,
+				status,
+				images: photos,
+				videos,
+			} = request.body as {
+				name?: string;
+				species?: Species;
+				breed?: string;
+				age?: number;
+				gender?: Gender;
+				weight?: number;
+				foundLocation?: string;
+				description?: string;
+				personality?: string;
+				status?: AnimalStatus;
+				images?: MediaAsset[];
+				videos?: MediaAsset[];
+			};
+
+			const [updatedAnimal] = await fastify.db
+				.update(animals)
+				.set({
+					...(name !== undefined && { name: name.trim() || null }),
+					...(species !== undefined && { species }),
+					...(breed !== undefined && { breed: breed.trim() || null }),
+					...(age !== undefined && { age: age ? String(age) : null }),
+					...(gender !== undefined && { gender }),
+					...(weight !== undefined && { weight: weight ? String(weight) : null }),
+					...(foundLocation !== undefined && { foundLocation: foundLocation.trim() }),
+					...(description !== undefined && { description: description.trim() || null }),
+					...(personality !== undefined && { personality: personality.trim() || null }),
+					...(status !== undefined && { status }),
+					...(photos !== undefined && { photos }),
+					...(videos !== undefined && { videos }),
+					updatedAt: new Date(),
+				})
+				.where(eq(animals.id, id))
+				.returning();
+
+			if (!updatedAnimal) {
+				throw new ApiError("Failed to update animal record", 500);
+			}
+
+			return reply.success({ animal: updatedAnimal }, "Animal record updated successfully");
+		},
+	);
+
 	/** Get all animals for dashboard */
 	fastify.get(
 		"/",
@@ -467,6 +540,46 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 				"Timeline history fetched successfully",
 				200,
 			);
+		},
+	);
+
+	/** Get animal basic profile data for update */
+	fastify.get(
+		"/:animalId/update-profile",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { animalId } = request.params as { animalId: string };
+
+			if (!animalId) {
+				throw new ApiError("Animal ID is required", 400, "ANIMAL_ID_REQUIRED");
+			}
+
+			const [animal] = await fastify.db
+				.select({
+					id: animals.id,
+					name: animals.name,
+					animalId: animals.animalId,
+					breed: animals.breed,
+					gender: animals.gender,
+					age: sql<number>`${animals.age}::numeric`,
+					weight: sql<number>`${animals.weight}::numeric`,
+					foundLocation: animals.foundLocation,
+					description: animals.description,
+					personality: animals.personality,
+					status: animals.status,
+					photos: animals.photos,
+					videos: animals.videos,
+					createdBy: animals.createdBy,
+				})
+				.from(animals)
+				.where(eq(animals.id, animalId))
+				.limit(1);
+
+			if (!animal) {
+				throw new ApiError("Animal not found", 404, "ANIMAL_NOT_FOUND");
+			}
+
+			return reply.success({ animal }, "Animal data fetched successfully");
 		},
 	);
 }

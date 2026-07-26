@@ -183,6 +183,9 @@ export function AnimalMedicalCard({ animal }: { animal: AllMedicalRecordsResp["a
 									</Link>
 								</DropdownMenuItem>
 								<DropdownMenuItem asChild>
+									<Link to={`/animals/${animal.id}/edit`}>Edit Profile</Link>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
 									<Link to={`/animals/${animal.id}`}>View General Profile</Link>
 								</DropdownMenuItem>
 							</DropdownMenuContent>

@@ -45,6 +45,35 @@ export function createAnimalsApi(client = createApiClient()) {
 			return resp;
 		},
 
+		async updateAnimal(
+			id: string,
+			data: {
+				name?: string;
+				species?: Species;
+				breed?: string;
+				age?: number;
+				gender?: Gender;
+				weight?: number;
+				foundLocation?: string;
+				description?: string;
+				personality?: string;
+				status?: AnimalStatus;
+				images?: MediaAsset[];
+				videos?: MediaAsset[];
+			},
+		) {
+			const resp = await client.request<ApiResponse<{ animal: Animal }>>(`/animals/${id}`, {
+				method: "PUT",
+				body: JSON.stringify(data),
+			});
+
+			await invalidateCache("all_animals");
+			await invalidateCache(`animal-update:${id}`);
+			await invalidateCache(`all-medical-records`);
+
+			return resp;
+		},
+
 		async getAllAnimals({
 			search,
 			pageIndex,
@@ -182,6 +211,19 @@ export function createAnimalsApi(client = createApiClient()) {
 				queryKey: [`timeline:${animalId}`],
 				queryFn: async () => {
 					return await client.request<ReturnType>(`/animals/${animalId}/timeline`);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
+		},
+
+		async getAnimalForUpdate(animalId: string) {
+			const qo = queryOptions<ApiResponse<{ animal: Animal }>>({
+				queryKey: [`animal-update:${animalId}`],
+				queryFn: async () => {
+					return await client.request<ApiResponse<{ animal: Animal }>>(
+						`/animals/${animalId}/update-profile`,
+					);
 				},
 			});
 
