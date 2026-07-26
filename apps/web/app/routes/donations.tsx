@@ -96,7 +96,7 @@ export default function DonationPage() {
 													Account Title
 												</span>
 												<span className="font-semibold text-foreground">
-													ShelterOS Animal Foundation
+													Safe Haven Animal Foundation
 												</span>
 											</div>
 											<div className="flex justify-between items-center py-2 border-b border-border/60">
@@ -170,7 +170,7 @@ export default function DonationPage() {
 													Account Title
 												</span>
 												<span className="font-semibold text-foreground">
-													ShelterOS Emergency Rescue
+													Safe Haven Emergency Rescue
 												</span>
 											</div>
 											<div className="flex justify-between items-center py-2 border-b border-border/60">
@@ -303,10 +303,10 @@ export default function DonationPage() {
 										If you require an official donation tax receipt for wire transfers,
 										please email your transaction proof to{" "}
 										<a
-											href="mailto:donations@shelteros.org"
+											href="mailto:donations@Safe Haven.org"
 											className="text-primary underline font-medium"
 										>
-											donations@shelteros.org
+											donations@Safe Haven.org
 										</a>{" "}
 										with your legal name and contact address.
 									</p>
@@ -348,7 +348,7 @@ export default function DonationPage() {
 										</div>
 										<div>
 											<div className="text-xs font-bold text-foreground">
-												The ShelterOS Rescue Team
+												The Safe Haven Rescue Team
 											</div>
 											<div className="text-[11px] text-muted-foreground">
 												On behalf of 140+ resident animals

@@ -41,7 +41,7 @@ export default function WhiskersStory() {
 						<article className="prose prose-stone max-w-none">
 							<h2 className="text-2xl md:text-3xl font-bold text-primary mb-4">A Slow Start</h2>
 							<p className="text-base text-foreground mb-6 leading-relaxed">
-								When Whiskers first arrived at ShelterOS, he was a shadow of the cat he is
+								When Whiskers first arrived at Safe Haven, he was a shadow of the cat he is
 								today. Found wandering a busy industrial park, the hustle and noise had
 								clearly taken a toll on him. During his first few weeks with us, he spent most
 								of his time hiding in the quietest, darkest corner of his enclosure, wide-eyed

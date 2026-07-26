@@ -29,8 +29,8 @@ export default function Layout() {
 			>
 				<div className="flex justify-between items-center h-20 px-6 max-w-7xl mx-auto">
 					<Link to="/" viewTransition prefetch="intent">
-						<div className="w-44 h-fit select-none">
-							<img src="/logo.png" className="w-44 h-fit mix-blend-multiply" alt="ShelterOS" />
+						<div className="w-16 h-fit select-none">
+							<img src="/logo.png" className="w-16 h-fit mix-blend-multiply" alt="Safe Haven" />
 						</div>
 					</Link>
 
@@ -123,7 +123,7 @@ export default function Layout() {
 				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-6 py-16 max-w-7xl mx-auto">
 					<div>
 						<h3 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-							ShelterOS
+							Safe Haven
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							Compassion in every connection. We are dedicated to rescuing, rehabilitating, and
@@ -183,7 +183,7 @@ export default function Layout() {
 				</div>
 				<div className="px-6 py-6 border-t border-border/50 max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
 					<p className="text-sm text-muted-foreground">
-						© {new Date().getFullYear()} ShelterOS. All rights reserved. Compassion in every
+						© {new Date().getFullYear()} Safe Haven. All rights reserved. Compassion in every
 						connection.
 					</p>
 				</div>

@@ -238,7 +238,7 @@ export default function HomeLanding() {
 									Dedicated to Animal Welfare &amp; Community
 								</h2>
 								<p className="text-muted-foreground mb-8 leading-relaxed">
-									At ShelterOS, we believe in a holistic approach to animal rescue. We
+									At Safe Haven, we believe in a holistic approach to animal rescue. We
 									aren't just a shelter; we are a community hub for education,
 									rehabilitation, and compassionate care.
 								</p>

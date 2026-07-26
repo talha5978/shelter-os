@@ -48,7 +48,7 @@ export default function MaxStory() {
 								</CardHeader>
 								<CardContent className="space-y-4 text-muted-foreground leading-relaxed">
 									<p>
-										When Max first arrived at ShelterOS, his energy was undeniable. A
+										When Max first arrived at Safe Haven, his energy was undeniable. A
 										golden retriever mix with endless stamina, he spent his first few
 										weeks pacing the enclosure, eager for engagement. The staff quickly
 										realized that Max wasn't just an active dog; he needed a job, a
@@ -82,7 +82,7 @@ export default function MaxStory() {
 								<CardContent className="space-y-4 text-muted-foreground leading-relaxed">
 									<p>
 										Enter the Johnson family. Avid hikers and weekend campers, they
-										visited ShelterOS looking for a companion to join their outdoor
+										visited Safe Haven looking for a companion to join their outdoor
 										excursions. During their initial meet-and-greet in our open play area,
 										the connection was instantaneous.
 									</p>
