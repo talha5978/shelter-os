@@ -238,130 +238,165 @@ export default function AddAnimal() {
 						<CardHeader className="pb-4 border-b border-border/50 mb-6">
 							<CardTitle className="text-lg">Basic Information</CardTitle>
 						</CardHeader>
-						<CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-							<Controller
-								name="name"
-								control={form.control}
-								render={({ field, fieldState }) => (
-									<Field data-invalid={fieldState.invalid}>
-										<FieldLabel>Animal Name</FieldLabel>
-										<Input placeholder="e.g. Buddy" {...field} />
-										<FieldError errors={[fieldState.error]} />
-									</Field>
-								)}
-							/>
+						<CardContent>
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+								<Controller
+									name="name"
+									control={form.control}
+									render={({ field, fieldState }) => (
+										<Field data-invalid={fieldState.invalid}>
+											<FieldLabel>Animal Name</FieldLabel>
+											<Input placeholder="e.g. Buddy" {...field} />
+											<FieldError errors={[fieldState.error]} />
+										</Field>
+									)}
+								/>
 
-							<Controller
-								name="species"
-								control={form.control}
-								render={({ field }) => (
-									<Field>
-										<FieldLabel>Species</FieldLabel>
-										<Select onValueChange={field.onChange} value={field.value}>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												{["dog", "cat", "bird", "rabbit", "reptile", "other"].map(
-													(s) => (
-														<SelectItem key={s} value={s}>
-															{s.charAt(0).toUpperCase() + s.slice(1)}
-														</SelectItem>
-													),
-												)}
-											</SelectContent>
-										</Select>
-									</Field>
-								)}
-							/>
+								<Controller
+									name="species"
+									control={form.control}
+									render={({ field }) => (
+										<Field>
+											<FieldLabel>Species</FieldLabel>
+											<Select onValueChange={field.onChange} value={field.value}>
+												<SelectTrigger>
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													{["dog", "cat", "bird", "rabbit", "reptile", "other"].map(
+														(s) => (
+															<SelectItem key={s} value={s}>
+																{s.charAt(0).toUpperCase() + s.slice(1)}
+															</SelectItem>
+														),
+													)}
+												</SelectContent>
+											</Select>
+										</Field>
+									)}
+								/>
 
-							<Controller
-								name="breed"
-								control={form.control}
-								render={({ field }) => (
-									<Field>
-										<FieldLabel>Breed (Optional)</FieldLabel>
-										<Input placeholder="e.g. German Shepherd" {...field} />
-									</Field>
-								)}
-							/>
+								<Controller
+									name="breed"
+									control={form.control}
+									render={({ field }) => (
+										<Field>
+											<FieldLabel>Breed (Optional)</FieldLabel>
+											<Input placeholder="e.g. German Shepherd" {...field} />
+										</Field>
+									)}
+								/>
 
-							<Controller
-								name="gender"
-								control={form.control}
-								render={({ field }) => (
-									<Field>
-										<FieldLabel>Gender</FieldLabel>
-										<Select onValueChange={field.onChange} value={field.value}>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="male">Male</SelectItem>
-												<SelectItem value="female">Female</SelectItem>
-												<SelectItem value="unknown">Unknown</SelectItem>
-											</SelectContent>
-										</Select>
-									</Field>
-								)}
-							/>
+								<Controller
+									name="gender"
+									control={form.control}
+									render={({ field }) => (
+										<Field>
+											<FieldLabel>Gender</FieldLabel>
+											<Select onValueChange={field.onChange} value={field.value}>
+												<SelectTrigger>
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="male">Male</SelectItem>
+													<SelectItem value="female">Female</SelectItem>
+													<SelectItem value="unknown">Unknown</SelectItem>
+												</SelectContent>
+											</Select>
+										</Field>
+									)}
+								/>
 
-							<Controller
-								name="age"
-								control={form.control}
-								render={({ field }) => (
-									<Field>
-										<FieldLabel>Age (years)</FieldLabel>
-										<Input
-											type="number"
-											step="0.01"
-											placeholder="e.g. 2"
-											{...field}
-											onChange={(e) =>
-												field.onChange(
-													e.target.value ? Number(e.target.value) : undefined,
-												)
-											}
-										/>
-									</Field>
-								)}
-							/>
+								<Controller
+									name="age"
+									control={form.control}
+									render={({ field }) => (
+										<Field>
+											<FieldLabel>Age (years)</FieldLabel>
+											<Input
+												type="number"
+												step="0.01"
+												placeholder="e.g. 2"
+												{...field}
+												onChange={(e) =>
+													field.onChange(
+														e.target.value ? Number(e.target.value) : undefined,
+													)
+												}
+											/>
+										</Field>
+									)}
+								/>
 
-							<Controller
-								name="weight"
-								control={form.control}
-								render={({ field }) => (
-									<Field>
-										<FieldLabel>Weight (kg)</FieldLabel>
-										<Input
-											type="number"
-											step="0.1"
-											placeholder="e.g. 12.5"
-											{...field}
-											onChange={(e) =>
-												field.onChange(
-													e.target.value ? Number(e.target.value) : undefined,
-												)
-											}
-										/>
-									</Field>
-								)}
-							/>
+								<Controller
+									name="weight"
+									control={form.control}
+									render={({ field }) => (
+										<Field>
+											<FieldLabel>Weight (kg)</FieldLabel>
+											<Input
+												type="number"
+												step="0.1"
+												placeholder="e.g. 12.5"
+												{...field}
+												onChange={(e) =>
+													field.onChange(
+														e.target.value ? Number(e.target.value) : undefined,
+													)
+												}
+											/>
+										</Field>
+									)}
+								/>
+							</div>
 
-							<Controller
-								name="foundLocation"
-								control={form.control}
-								render={({ field, fieldState }) => (
-									<Field
-										data-invalid={fieldState.invalid}
-										className="md:col-span-2 lg:col-span-3"
-									>
-										<FieldLabel>Found Location</FieldLabel>
-										<Input placeholder="e.g. Main Street near Central Park" {...field} />
-										<FieldError errors={[fieldState.error]} />
-									</Field>
-								)}
-							/>
+							<div className="flex md:flex-row gap-6 mt-6 *:flex-1 flex-col">
+								<Controller
+									name="status"
+									control={form.control}
+									render={({ field, fieldState }) => (
+										<Field
+											data-invalid={fieldState.invalid}
+											className="md:col-span-2 lg:col-span-3"
+										>
+											<FieldLabel>Status</FieldLabel>
+											<Select onValueChange={field.onChange} value={field.value}>
+												<SelectTrigger>
+													<SelectValue />
+												</SelectTrigger>
+												<SelectContent>
+													<SelectItem value="rescued">Rescued</SelectItem>
+													<SelectItem value="intake">Intake</SelectItem>
+													<SelectItem value="medical">Medical</SelectItem>
+													<SelectItem value="foster">Foster Ready</SelectItem>
+													<SelectItem value="adoption_ready">
+														Adoption Ready
+													</SelectItem>
+													<SelectItem value="adopted">Adopted</SelectItem>
+												</SelectContent>
+											</Select>
+											<FieldError errors={[fieldState.error]} />
+										</Field>
+									)}
+								/>
+								<Controller
+									name="foundLocation"
+									control={form.control}
+									render={({ field, fieldState }) => (
+										<Field
+											data-invalid={fieldState.invalid}
+											className="md:col-span-2 lg:col-span-3"
+										>
+											<FieldLabel>Found Location</FieldLabel>
+											<Input
+												placeholder="e.g. Main Street near Central Park"
+												{...field}
+											/>
+											<FieldError errors={[fieldState.error]} />
+										</Field>
+									)}
+								/>
+							</div>
 						</CardContent>
 					</Card>
 
