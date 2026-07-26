@@ -2,6 +2,7 @@ import { Calendar, Cat, Hourglass, Feather } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Link } from "react-router";
 
 export default function WhiskersStory() {
 	return (
@@ -148,9 +149,11 @@ export default function WhiskersStory() {
 							timid animals to thrive.
 						</p>
 						<div className="flex flex-col sm:flex-row justify-center gap-4">
-							<Button size="lg">Sponsor a Cat</Button>
+							<Link to="/donate" viewTransition prefetch="intent">
+								<Button size="lg">Sponsor a Cat</Button>
+							</Link>
 							<Button size="lg" variant="outline">
-								View Adoptable Cats
+								Become a Foster Parent
 							</Button>
 						</div>
 					</div>

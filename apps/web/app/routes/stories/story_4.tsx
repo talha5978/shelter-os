@@ -172,7 +172,7 @@ export default function WindowSeatDuoStory() {
 									We currently have several bonded pairs waiting for a loving home.
 								</p>
 								<Button className="w-full" size="default">
-									View Bonded Pairs
+									Become an Adopter
 								</Button>
 							</CardContent>
 						</Card>

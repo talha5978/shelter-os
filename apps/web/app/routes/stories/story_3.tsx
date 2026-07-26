@@ -2,6 +2,7 @@ import { Heart, Cake, Dog, Timer, Sun, Quote, Milestone, Home } from "lucide-rea
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Link } from "react-router";
 
 export default function OliverStory() {
 	return (
@@ -210,7 +211,9 @@ export default function OliverStory() {
 									at a happy life.
 								</p>
 								<div className="flex flex-col sm:flex-row gap-4 justify-center">
-									<Button size="lg">Sponsor a Senior</Button>
+									<Link to="/donate" viewTransition prefetch="intent">
+										<Button size="lg">Sponsor a Senior</Button>
+									</Link>
 									<Button size="lg" variant="outline">
 										View Adoptable Seniors
 									</Button>

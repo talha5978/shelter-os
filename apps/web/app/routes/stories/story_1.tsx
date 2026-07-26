@@ -2,6 +2,7 @@ import { Dog, Cake, Layers, Clock, Footprints, Quote } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Link } from "react-router";
 
 export default function MaxStory() {
 	return (
@@ -172,11 +173,13 @@ export default function MaxStory() {
 										in need.
 									</p>
 									<div className="flex flex-col gap-2">
-										<Button className="w-full" size="default">
-											Sponsor a Dog
-										</Button>
+										<Link to="/donate" viewTransition prefetch="intent">
+											<Button className="w-full" size="default">
+												Sponsor a Dog
+											</Button>
+										</Link>
 										<Button className="w-full" variant="outline" size="default">
-											View Adoptable Dogs
+											Become a Foster Partner
 										</Button>
 									</div>
 								</CardContent>
