@@ -2,11 +2,13 @@ import { queryOptions } from "@tanstack/react-query";
 import type {
 	Animal,
 	AnimalStatus,
+	AnimalTimeline,
 	Gender,
 	MediaAsset,
 	MedicalRecord,
 	Medication,
 	Species,
+	TimelineMetaData,
 	Vaccine,
 } from "@workspace/db";
 import { createApiClient } from "~/api/client";
@@ -162,7 +164,28 @@ export function createAnimalsApi(client = createApiClient()) {
 				},
 			);
 
+			await invalidateCache(`timeline:${animalId}`);
+
 			return resp;
+		},
+
+		async getTimelineHistory(animalId: string) {
+			type ReturnType = ApiResponse<{
+				timeline: (AnimalTimeline & { metadata: TimelineMetaData })[];
+				animal: {
+					id: string;
+					name: string;
+					animalId: string;
+				};
+			}>;
+			const qo = queryOptions<ReturnType>({
+				queryKey: [`timeline:${animalId}`],
+				queryFn: async () => {
+					return await client.request<ReturnType>(`/animals/${animalId}/timeline`);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
 		},
 	};
 }

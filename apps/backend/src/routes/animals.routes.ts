@@ -8,7 +8,7 @@ import {
 	type Species,
 	type Vaccine,
 } from "@workspace/db";
-import { count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { adminAuthMiddleware, requireRole } from "~/middlewares/auth.middleware";
 import { ApiError } from "~/utils/ApiError";
@@ -419,6 +419,53 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 				},
 				"Timeline entry added successfully",
 				201,
+			);
+		},
+	);
+
+	/** Get an animal's full timeline */
+	fastify.get(
+		"/:animalId/timeline",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { animalId } = request.params as { animalId: string };
+
+			if (!animalId) {
+				throw new ApiError("Animal id is missing", 400, "ANIMAL_ID_REQUIRED");
+			}
+
+			const [animal] = await fastify.db
+				.select({
+					id: animals.id,
+					name: animals.name,
+					animalId: animals.animalId,
+				})
+				.from(animals)
+				.where(eq(animals.id, animalId))
+				.limit(1);
+
+			if (!animal) {
+				throw new ApiError("Animal not found", 400);
+			}
+
+			const timeline = await fastify.db
+				.select()
+				.from(animalTimeline)
+				.where(eq(animalTimeline.animalId, animalId))
+				.orderBy(asc(animalTimeline.eventDate))
+				.limit(20);
+
+			return reply.success(
+				{
+					timeline,
+					animal: {
+						id: animal.id,
+						name: animal.name,
+						animalId: animal.animalId,
+					},
+				},
+				"Timeline history fetched successfully",
+				200,
 			);
 		},
 	);

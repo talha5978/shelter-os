@@ -20,6 +20,7 @@ import { Field, FieldLabel, FieldError } from "~/components/ui/field";
 import { toast } from "sonner";
 import { createAnimalsApi } from "~/api/animals.api";
 import { useState } from "react";
+import { useRevalidator } from "react-router";
 
 const EVENT_TYPES = [
 	{ value: "rescued", label: "Rescued / Intake" },
@@ -66,6 +67,7 @@ interface AddTimelineEventSheetProps {
 export function AddTimelineEventSheet({ animalId, open, onOpenChange }: AddTimelineEventSheetProps) {
 	const nowLocalIso = new Date().toISOString().slice(0, 16);
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const revalidator = useRevalidator();
 
 	const { handleSubmit, control, watch, reset } = useForm<TimelineFormValues>({
 		resolver: zodResolver(timelineFormSchema),
@@ -130,6 +132,7 @@ export function AddTimelineEventSheet({ animalId, open, onOpenChange }: AddTimel
 			const resp = await animalsApi.addTimeline(animalId, values);
 			if (resp.success) {
 				toast.success("Timeline event added successfully.");
+				revalidator.revalidate();
 				reset();
 				onOpenChange(false);
 			} else {

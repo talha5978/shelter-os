@@ -1,4 +1,12 @@
-import { Form, Link, type LoaderFunctionArgs, useLoaderData, useLocation, useNavigation } from "react-router";
+import {
+	Form,
+	Link,
+	type LoaderFunctionArgs,
+	useLoaderData,
+	useLocation,
+	useNavigation,
+	useSearchParams,
+} from "react-router";
 import { Search, AlertTriangle, RefreshCw, Plus, PawPrint } from "lucide-react";
 import { createApiClient } from "~/api/client";
 import { createAnimalsApi } from "~/api/animals.api";
@@ -11,8 +19,8 @@ import { GetPaginationControls } from "~/utils/PaginationControls";
 import { getPaginationQueryPayload } from "~/utils/PaginationQueryPayload";
 import { AnimalCard } from "~/components/Animals/AnimalCard";
 import { useState } from "react";
-import { AddTimelineEventSheet } from "~/components/Timeline/AddTimelineEventSheet";
 import { invalidateCache } from "~/utils/invalidate";
+import { TimelineHistorySheet } from "~/components/Timeline/TimelineHistorySheet";
 
 export const meta = () => {
 	return [
@@ -36,13 +44,21 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 		pageSize,
 	});
 
-	return { ...data, queryParams: { q, pageIndex, pageSize } };
+	const url = new URL(request.url);
+	const animalId = url.searchParams.get("timeline")?.trim() ?? "";
+	let timelineData = null;
+	if (animalId) {
+		timelineData = await animalsApi.getTimelineHistory(animalId);
+	}
+
+	return { ...data, timelineData, queryParams: { q, pageIndex, pageSize } };
 };
 
 export default function AnimalsDirectoryPage() {
 	const loaderData = useLoaderData<typeof loader>();
 	const navigation = useNavigation();
 	const location = useLocation();
+	const [_, setSearchParams] = useSearchParams();
 
 	const isFetching = navigation.state === "loading" && navigation.location?.pathname === location.pathname;
 
@@ -186,7 +202,16 @@ export default function AnimalsDirectoryPage() {
 					</div>
 				</div>
 			</div>
-			{animalId && <AddTimelineEventSheet animalId={animalId} open={open} onOpenChange={setOpen} />}
+			{animalId && loaderData.timelineData && (
+				<TimelineHistorySheet
+					animalId={animalId}
+					open={open}
+					onOpenChange={() => {
+						setSearchParams({});
+						setOpen(!open);
+					}}
+				/>
+			)}
 		</>
 	);
 }

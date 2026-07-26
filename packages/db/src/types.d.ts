@@ -60,3 +60,10 @@ export type Medication = {
 	startDate?: Date | null;
 	endDate?: Date | null;
 };
+
+export type TimelineMetaData = {
+	location?: string;
+	associatedPerson?: string;
+	referenceCodeOrBatch?: string;
+	numericValue?: number;
+};

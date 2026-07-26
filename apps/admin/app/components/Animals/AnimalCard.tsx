@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { ChevronLeft, ChevronRight, MoreVertical, ArrowRight, Dog, Cat, PawPrint } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
@@ -99,6 +99,7 @@ export function AnimalCard({ animal, onAnimalSelect }: { animal: AnimalItem; onA
 	const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 	const photos = animal.photos ?? [];
 	const hasPhotos = photos.length > 0;
+	const [_, setSearchParams] = useSearchParams();
 
 	const handlePrev = (e: React.MouseEvent) => {
 		e.preventDefault();
@@ -197,7 +198,14 @@ export function AnimalCard({ animal, onAnimalSelect }: { animal: AnimalItem; onA
 								<DropdownMenuItem asChild>
 									<Link to={`/animals/${animal.id}/medical-records`}>Medical Records</Link>
 								</DropdownMenuItem>
-								<DropdownMenuItem onClick={onAnimalSelect}>Add Timeline</DropdownMenuItem>
+								<DropdownMenuItem
+									onClick={() => {
+										setSearchParams({ timeline: String(animal.id) });
+										onAnimalSelect();
+									}}
+								>
+									View Timeline
+								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
