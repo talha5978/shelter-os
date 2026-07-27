@@ -93,7 +93,7 @@ export function createAnimalsApi(client = createApiClient()) {
 				queryKey: ["all_animals", queryParams.toString()],
 				queryFn: async () => {
 					return await client.request<ApiResponse<AllAnimalsResponse>>(
-						`/animals/${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
+						`/animals${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
 					);
 				},
 			});

@@ -183,7 +183,7 @@ export default function AnimalsDirectoryPage() {
 						<Button
 							variant="outline"
 							size="sm"
-							disabled={!pagination?.hasPrev || !pagination?.hasNext}
+							disabled={!pagination?.hasPrev}
 							onClick={() => onPageChange((pagination?.page || 1) - 2)}
 						>
 							Previous
@@ -194,7 +194,7 @@ export default function AnimalsDirectoryPage() {
 						<Button
 							variant="outline"
 							size="sm"
-							disabled={!pagination?.hasNext || !pagination?.hasPrev}
+							disabled={!pagination?.hasNext}
 							onClick={() => onPageChange(pagination?.page || 1)}
 						>
 							Next

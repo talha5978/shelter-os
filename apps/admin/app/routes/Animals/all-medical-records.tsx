@@ -21,7 +21,6 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { AnimalMedicalCard } from "~/components/MedicalRecords/AnimalMedicalCard";
 import { createApiClient } from "~/api/client";
-import { getPaginationQueryPayload } from "~/utils/PaginationQueryPayload";
 import { createAnimalsApi } from "~/api/animals.api";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -29,7 +28,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 	const client = createApiClient();
 	client.setCookie(cookieHeader);
 
-	const { q, pageIndex, pageSize } = getPaginationQueryPayload({ request, defaultPageSize: 12 });
+	const url = new URL(request.url);
+	const q = url.searchParams.get("q")?.trim() ?? "";
+	const pageParam = Number(url.searchParams.get("pageIndex") ?? String(1));
+	const sizeParam = Number(url.searchParams.get("size") ?? String(12));
+
+	const pageIndex = Math.max(0, pageParam);
+	const pageSize = Math.max(1, sizeParam);
 
 	const animalsApi = createAnimalsApi(client);
 

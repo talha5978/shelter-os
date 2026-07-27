@@ -68,7 +68,7 @@ function getStatusBadge(status: string) {
 		case "foster":
 			return (
 				<Badge className="bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/20 font-medium">
-					In Foster
+					Foster Ready
 				</Badge>
 			);
 		case "medical":

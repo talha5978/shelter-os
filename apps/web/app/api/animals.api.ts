@@ -27,7 +27,7 @@ export function createAnimalsApi(client = createApiClient()) {
 			if (species) queryParams.set("species", species);
 
 			const qo = queryOptions<ApiResponse<AnimalsResponse>>({
-				queryKey: ["fosterable_animals", queryParams.toString()],
+				queryKey: ["animals", queryParams.toString()],
 				queryFn: async () => {
 					return await client.request<ApiResponse<AnimalsResponse>>(
 						`/animals/public${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,

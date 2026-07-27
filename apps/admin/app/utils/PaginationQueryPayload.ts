@@ -22,7 +22,7 @@ export function getPaginationQueryPayload({
 	const pageParam = Number(url.searchParams.get("page") ?? String(defaultPageNo));
 	const sizeParam = Number(url.searchParams.get("size") ?? String(defaultPageSize));
 
-	const pageIndex = Math.max(0, pageParam - 1);
+	const pageIndex = Math.max(0, pageParam);
 	const pageSize = Math.max(1, sizeParam);
 
 	return {
