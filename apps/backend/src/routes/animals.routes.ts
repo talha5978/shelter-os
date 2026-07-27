@@ -8,9 +8,9 @@ import {
 	type Species,
 	type Vaccine,
 } from "@workspace/db";
-import { asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { adminAuthMiddleware, requireRole } from "~/middlewares/auth.middleware";
+import { adminAuthMiddleware, publicAuthMiddleware, requireRole } from "~/middlewares/auth.middleware";
 import { ApiError } from "~/utils/ApiError";
 
 export async function animalsRoutes(fastify: FastifyInstance) {
@@ -580,6 +580,99 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			}
 
 			return reply.success({ animal }, "Animal data fetched successfully");
+		},
+	);
+
+	/** Get animals to foster */
+	fastify.get(
+		"/public",
+		{
+			preHandler: [publicAuthMiddleware, requireRole(["foster_volunteer", "adopter"])],
+		},
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const {
+				pageIndex: rPageIndex = "1",
+				pageSize = "12",
+				search = "",
+				species,
+			} = request.query as {
+				pageIndex?: string;
+				pageSize?: string;
+				search?: string;
+				species?: string;
+			};
+
+			const pageIndex = Math.max(1, parseInt(rPageIndex));
+			const limit = Math.min(50, parseInt(pageSize));
+			const offset = (pageIndex - 1) * limit;
+
+			// Base condition: only animals with status = 'foster'
+			const conditions = [
+				eq(animals.status, request.user!.role === "foster_volunteer" ? "foster" : "adoption_ready"),
+			];
+
+			// Optional search
+			if (search.trim()) {
+				conditions.push(
+					or(
+						ilike(animals.name, `%${search}%`),
+						ilike(animals.breed, `%${search}%`),
+						ilike(animals.animalId, `%${search}%`),
+						ilike(animals.description, `%${search}%`),
+					)!,
+				);
+			}
+
+			// Optional species filter
+			if (species && species !== "all") {
+				conditions.push(eq(animals.species, species as any));
+			}
+
+			// Total count
+			const [{ count: total }] = await fastify.db
+				.select({ count: count() })
+				.from(animals)
+				.where(and(...conditions));
+
+			// Fetch animals
+			const fosterableAnimals = await fastify.db
+				.select({
+					id: animals.id,
+					animalId: animals.animalId,
+					name: animals.name,
+					species: animals.species,
+					breed: animals.breed,
+					age: animals.age,
+					gender: animals.gender,
+					weight: animals.weight,
+					description: animals.description,
+					personality: animals.personality,
+					photos: animals.photos,
+					status: animals.status,
+					createdAt: animals.createdAt,
+				})
+				.from(animals)
+				.where(and(...conditions))
+				.orderBy(desc(animals.createdAt))
+				.limit(limit)
+				.offset(offset);
+
+			const totalPages = Math.ceil(Number(total) / limit);
+
+			return reply.success(
+				{
+					animals: fosterableAnimals,
+					pagination: {
+						page: pageIndex,
+						pageSize: limit,
+						total: Number(total),
+						totalPages,
+						hasNext: pageIndex < totalPages,
+						hasPrev: pageIndex > 1,
+					},
+				},
+				"Fosterable animals fetched successfully",
+			);
 		},
 	);
 }

@@ -8,6 +8,7 @@ export default [
 		route("stories/olivers-golden-years", "./routes/stories/story_3.tsx"),
 		route("stories/the-window-seat-duo", "./routes/stories/story_4.tsx"),
 		route("donate", "./routes/donations.tsx"),
+		layout("./routes/protected-layout.tsx", [route("animals/:status", "./routes/animals.tsx")]),
 	]),
 
 	layout("./routes/auth-layout.tsx", [

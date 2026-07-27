@@ -126,18 +126,28 @@ export default function Layout() {
 											<span>My Account</span>
 										</Link>
 									</DropdownMenuItem>
-									<DropdownMenuItem asChild className="cursor-pointer">
-										<Link to="/animals/adoptable" className="flex items-center w-full">
-											<Heart className="mr-2 h-4 w-4" />
-											<span>Adoptable Animals</span>
-										</Link>
-									</DropdownMenuItem>
-									<DropdownMenuItem asChild className="cursor-pointer">
-										<Link to="/animals/fosterable" className="flex items-center w-full">
-											<Home className="mr-2 h-4 w-4" />
-											<span>Fosterable Animals</span>
-										</Link>
-									</DropdownMenuItem>
+									{user.role === "foster_volunteer" && (
+										<DropdownMenuItem asChild className="cursor-pointer">
+											<Link
+												to="/animals/fosterable"
+												className="flex items-center w-full"
+											>
+												<Home className="mr-2 h-4 w-4" />
+												<span>Fosterable Animals</span>
+											</Link>
+										</DropdownMenuItem>
+									)}
+									{user.role === "adopter" && (
+										<DropdownMenuItem asChild className="cursor-pointer">
+											<Link
+												to="/animals/adoptable"
+												className="flex items-center w-full"
+											>
+												<Heart className="mr-2 h-4 w-4" />
+												<span>Adoptable Animals</span>
+											</Link>
+										</DropdownMenuItem>
+									)}
 									<DropdownMenuSeparator />
 									<DropdownMenuItem
 										onClick={handleLogout}
