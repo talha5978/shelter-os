@@ -58,7 +58,7 @@ export default function AnimalsDirectoryPage() {
 	const loaderData = useLoaderData<typeof loader>();
 	const navigation = useNavigation();
 	const location = useLocation();
-	const [_, setSearchParams] = useSearchParams();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const isFetching = navigation.state === "loading" && navigation.location?.pathname === location.pathname;
 
@@ -207,7 +207,14 @@ export default function AnimalsDirectoryPage() {
 					animalId={animalId}
 					open={open}
 					onOpenChange={() => {
-						setSearchParams({});
+						const size = searchParams.get("size");
+						const page = searchParams.get("page");
+						const q = searchParams.get("q");
+						setSearchParams({
+							...(size && { size }),
+							...(page && { page }),
+							...(q && { q }),
+						});
 						setOpen(!open);
 					}}
 				/>

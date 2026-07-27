@@ -99,7 +99,7 @@ export function AnimalCard({ animal, onAnimalSelect }: { animal: AnimalItem; onA
 	const [activePhotoIdx, setActivePhotoIdx] = useState(0);
 	const photos = animal.photos ?? [];
 	const hasPhotos = photos.length > 0;
-	const [_, setSearchParams] = useSearchParams();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const handlePrev = (e: React.MouseEvent) => {
 		e.preventDefault();
@@ -200,7 +200,15 @@ export function AnimalCard({ animal, onAnimalSelect }: { animal: AnimalItem; onA
 								</DropdownMenuItem>
 								<DropdownMenuItem
 									onClick={() => {
-										setSearchParams({ timeline: String(animal.id) });
+										const size = searchParams.get("size");
+										const page = searchParams.get("page");
+										const q = searchParams.get("q");
+										setSearchParams({
+											...(size && { size }),
+											...(page && { page }),
+											...(q && { q }),
+											timeline: String(animal.id),
+										});
 										onAnimalSelect();
 									}}
 								>
