@@ -560,6 +560,7 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 					name: animals.name,
 					animalId: animals.animalId,
 					breed: animals.breed,
+					species: animals.species,
 					gender: animals.gender,
 					age: sql<number>`${animals.age}::numeric`,
 					weight: sql<number>`${animals.weight}::numeric`,
