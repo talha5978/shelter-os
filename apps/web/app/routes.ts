@@ -9,4 +9,9 @@ export default [
 		route("stories/the-window-seat-duo", "./routes/stories/story_4.tsx"),
 		route("donate", "./routes/donations.tsx"),
 	]),
+
+	layout("./routes/auth-layout.tsx", [
+		route("sign-in", "./routes/Auth/sign-in.tsx"),
+		route("sign-up", "./routes/Auth/sign-up.tsx"),
+	]),
 ] satisfies RouteConfig;

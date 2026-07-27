@@ -214,9 +214,11 @@ export default function OliverStory() {
 									<Link to="/donate" viewTransition prefetch="intent">
 										<Button size="lg">Sponsor a Senior</Button>
 									</Link>
-									<Button size="lg" variant="outline">
-										View Adoptable Seniors
-									</Button>
+									<Link to="/sign-up" viewTransition prefetch="intent">
+										<Button size="lg" variant="outline">
+											Adopt Seniors
+										</Button>
+									</Link>
 								</div>
 							</CardContent>
 						</Card>

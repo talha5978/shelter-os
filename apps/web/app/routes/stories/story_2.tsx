@@ -152,9 +152,11 @@ export default function WhiskersStory() {
 							<Link to="/donate" viewTransition prefetch="intent">
 								<Button size="lg">Sponsor a Cat</Button>
 							</Link>
-							<Button size="lg" variant="outline">
-								Become a Foster Parent
-							</Button>
+							<Link to="/sign-up?isFoster=true" viewTransition prefetch="intent">
+								<Button size="lg" variant="outline">
+									Become a Foster Parent
+								</Button>
+							</Link>
 						</div>
 					</div>
 				</section>

@@ -2,6 +2,7 @@ import { Heart, Leaf, Quote, Lightbulb, CheckCircle, Cat } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { Link } from "react-router";
 
 export default function WindowSeatDuoStory() {
 	return (
@@ -171,9 +172,11 @@ export default function WindowSeatDuoStory() {
 								<p className="text-xs text-muted-foreground leading-relaxed">
 									We currently have several bonded pairs waiting for a loving home.
 								</p>
-								<Button className="w-full" size="default">
-									Become an Adopter
-								</Button>
+								<Link to="/sign-up" viewTransition prefetch="intent">
+									<Button className="w-full" size="default">
+										Become an Adopter
+									</Button>
+								</Link>
 							</CardContent>
 						</Card>
 					</aside>

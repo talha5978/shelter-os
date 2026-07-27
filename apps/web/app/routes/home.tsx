@@ -4,6 +4,14 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent } from "~/components/ui/card";
 
+export const meta = () => {
+	return [
+		{
+			title: "Home | Safe Haven",
+		},
+	];
+};
+
 export default function HomeLanding() {
 	return (
 		<div className="bg-background text-foreground antialiased min-h-screen flex flex-col font-sans">
@@ -34,15 +42,17 @@ export default function HomeLanding() {
 								here.
 							</p>
 							<div className="flex flex-col sm:flex-row gap-4">
-								<Button size="lg" className="group" asChild>
-									<a href="#adopt">
+								<Link to="/sign-up" viewTransition prefetch="intent">
+									<Button size="lg" className="group">
 										Adopt a Friend
 										<ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
-									</a>
-								</Button>
-								<Button size="lg" variant="secondary" asChild>
-									<a href="#foster">Become a Foster</a>
-								</Button>
+									</Button>
+								</Link>
+								<Link to="/sign-up?isFoster=true" viewTransition prefetch="intent">
+									<Button size="lg" variant="secondary">
+										Become a Foster
+									</Button>
+								</Link>
 							</div>
 						</div>
 					</div>

@@ -178,9 +178,11 @@ export default function MaxStory() {
 												Sponsor a Dog
 											</Button>
 										</Link>
-										<Button className="w-full" variant="outline" size="default">
-											Become a Foster Partner
-										</Button>
+										<Link to="/sign-up?isFoster=true" viewTransition prefetch="intent">
+											<Button className="w-full" variant="outline" size="default">
+												Become a Foster Partner
+											</Button>
+										</Link>
 									</div>
 								</CardContent>
 							</Card>

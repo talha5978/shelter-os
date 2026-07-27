@@ -28,6 +28,27 @@ export async function adminAuthMiddleware(request: FastifyRequest) {
 	}
 }
 
+export async function publicAuthMiddleware(request: FastifyRequest) {
+	let token: string | null = request.cookies?.publicAuthToken || null;
+
+	if (!token) {
+		token = extractToken(request.headers.authorization);
+	}
+
+	if (!token) {
+		throw new ApiError("Authentication required", 401, "NO_TOKEN");
+	}
+
+	try {
+		request.user = jwtService.verifyToken(token);
+	} catch (err: any) {
+		if (err.name === "TokenExpiredError") {
+			throw new ApiError("Token expired", 401, "TOKEN_EXPIRED");
+		}
+		throw new ApiError("Invalid token", 401, "INVALID_TOKEN");
+	}
+}
+
 export function requireRole(allowedRoles: UserPayload["role"][]) {
 	return async (request: FastifyRequest) => {
 		const user = request.user as UserPayload | undefined;
