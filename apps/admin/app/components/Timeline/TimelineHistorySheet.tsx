@@ -28,6 +28,7 @@ import { useLoaderData } from "react-router";
 import type { loader } from "~/routes/Animals/animals";
 import type { ErrorResponse, SuccessResponse } from "~/types/response";
 import { invalidateCache } from "~/utils/invalidate";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 
 interface EventTypeConfig {
 	label: string;
@@ -257,61 +258,104 @@ export function TimelineHistorySheet({ animalId, open, onOpenChange }: TimelineH
 															meta.numericValue !== undefined) && (
 															<div className="grid grid-cols-2 gap-2 pt-2 border-t border-border/30">
 																{meta.location && (
-																	<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
-																		<MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-																		<div className="truncate">
-																			<span className="text-[10px] block text-muted-foreground/80 leading-none">
-																				Location
-																			</span>
-																			<span className="font-medium text-foreground truncate block">
+																	<TooltipProvider>
+																		<Tooltip>
+																			<TooltipTrigger asChild>
+																				<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
+																					<MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+																					<div className="truncate">
+																						<span className="text-[10px] block text-muted-foreground/80 leading-none">
+																							Location
+																						</span>
+																						<span className="font-medium text-foreground truncate block">
+																							{meta.location}
+																						</span>
+																					</div>
+																				</div>
+																			</TooltipTrigger>
+																			<TooltipContent>
 																				{meta.location}
-																			</span>
-																		</div>
-																	</div>
+																			</TooltipContent>
+																		</Tooltip>
+																	</TooltipProvider>
 																)}
 
 																{meta.associatedPerson && (
-																	<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
-																		<User className="w-3.5 h-3.5 text-primary shrink-0" />
-																		<div className="truncate">
-																			<span className="text-[10px] block text-muted-foreground/80 leading-none">
-																				Contact
-																			</span>
-																			<span className="font-medium text-foreground truncate block">
+																	<TooltipProvider>
+																		<Tooltip>
+																			<TooltipTrigger asChild>
+																				<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
+																					<User className="w-3.5 h-3.5 text-primary shrink-0" />
+																					<div className="truncate">
+																						<span className="text-[10px] block text-muted-foreground/80 leading-none">
+																							Contact
+																						</span>
+																						<span className="font-medium text-foreground truncate block">
+																							{
+																								meta.associatedPerson
+																							}
+																						</span>
+																					</div>
+																				</div>
+																			</TooltipTrigger>
+																			<TooltipContent>
 																				{meta.associatedPerson}
-																			</span>
-																		</div>
-																	</div>
+																			</TooltipContent>
+																		</Tooltip>
+																	</TooltipProvider>
 																)}
 
 																{meta.referenceCodeOrBatch && (
-																	<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
-																		<Hash className="w-3.5 h-3.5 text-primary shrink-0" />
-																		<div className="truncate">
-																			<span className="text-[10px] block text-muted-foreground/80 leading-none">
-																				Reference / Batch
-																			</span>
-																			<span className="font-medium text-foreground truncate block">
+																	<TooltipProvider>
+																		<Tooltip>
+																			<TooltipTrigger asChild>
+																				<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
+																					<Hash className="w-3.5 h-3.5 text-primary shrink-0" />
+																					<div className="truncate">
+																						<span className="text-[10px] block text-muted-foreground/80 leading-none">
+																							Reference / Batch
+																						</span>
+																						<span className="font-medium text-foreground truncate block">
+																							{
+																								meta.referenceCodeOrBatch
+																							}
+																						</span>
+																					</div>
+																				</div>
+																			</TooltipTrigger>
+																			<TooltipContent>
 																				{meta.referenceCodeOrBatch}
-																			</span>
-																		</div>
-																	</div>
+																			</TooltipContent>
+																		</Tooltip>
+																	</TooltipProvider>
 																)}
 
 																{meta.numericValue !== undefined && (
-																	<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
-																		<span className="text-xs shrink-0">
-																			📊
-																		</span>
-																		<div className="truncate">
-																			<span className="text-[10px] block text-muted-foreground/80 leading-none">
-																				{config.numLabel || "Value"}
-																			</span>
-																			<span className="font-medium text-foreground truncate block">
+																	<TooltipProvider>
+																		<Tooltip>
+																			<TooltipTrigger asChild>
+																				<div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/40 p-2 rounded-md">
+																					<span className="text-xs shrink-0">
+																						📊
+																					</span>
+																					<div className="truncate">
+																						<span className="text-[10px] block text-muted-foreground/80 leading-none">
+																							{config.numLabel ||
+																								"Value"}
+																						</span>
+																						<span className="font-medium text-foreground truncate block">
+																							{
+																								meta.numericValue
+																							}
+																						</span>
+																					</div>
+																				</div>
+																			</TooltipTrigger>
+																			<TooltipContent>
 																				{meta.numericValue}
-																			</span>
-																		</div>
-																	</div>
+																			</TooltipContent>
+																		</Tooltip>
+																	</TooltipProvider>
 																)}
 															</div>
 														)}
