@@ -1,9 +1,24 @@
-import { Menu, X } from "lucide-react";
+import { Heart, Home, LogOut, Menu, User, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, Outlet } from "react-router";
+import { Link, Outlet, useNavigate, useRouteLoaderData } from "react-router";
 import { Button } from "~/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { createAuthApi } from "~/api/auth.api";
+import { toast } from "sonner";
+import type { loader } from "~/root";
 
 export default function Layout() {
+	const rootLoader = useRouteLoaderData<typeof loader>("root");
+	const user = rootLoader?.user?.success ? rootLoader?.user?.data.user : null;
+
 	const [isScrolled, setIsScrolled] = useState(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -18,6 +33,15 @@ export default function Layout() {
 		window.addEventListener("scroll", handleScroll);
 		return () => window.removeEventListener("scroll", handleScroll);
 	}, []);
+
+	const navigate = useNavigate();
+
+	async function handleLogout() {
+		const authApi = createAuthApi();
+		await authApi.logout();
+		toast.success("Logged out successfully");
+		navigate("/", { replace: true, state: { from: window.location.pathname } });
+	}
 
 	return (
 		<>
@@ -63,11 +87,71 @@ export default function Layout() {
 					</nav>
 
 					<div className="flex items-center gap-4">
-						<Link to="donate" prefetch="intent" viewTransition>
+						<Link to="/donate" prefetch="intent" viewTransition>
 							<Button className="hidden md:inline-flex" size="lg">
 								Donate Now
 							</Button>
 						</Link>
+
+						{/* User Avatar Dropdown */}
+						{user && (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button
+										variant="ghost"
+										className="relative h-10 w-10 rounded-full p-0 hover:bg-transparent"
+									>
+										<Avatar className="h-10 w-10 border border-border">
+											<AvatarImage src="/avatar-placeholder.png" alt="User Profile" />
+											<AvatarFallback className="bg-primary/10 text-primary font-bold">
+												{user?.name.split(" ")[0][0]}
+												{user?.name.split(" ")[1][0]}
+											</AvatarFallback>
+										</Avatar>
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent className="w-56" align="end" forceMount>
+									<DropdownMenuLabel className="font-normal">
+										<div className="flex flex-col space-y-1">
+											<p className="text-sm font-medium leading-none">User Account</p>
+											<p className="text-xs leading-none text-muted-foreground">
+												{user?.email}
+											</p>
+										</div>
+									</DropdownMenuLabel>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem asChild className="cursor-pointer">
+										<Link to="/account" className="flex items-center w-full">
+											<User className="mr-2 h-4 w-4" />
+											<span>My Account</span>
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild className="cursor-pointer">
+										<Link to="/animals/adoptable" className="flex items-center w-full">
+											<Heart className="mr-2 h-4 w-4" />
+											<span>Adoptable Animals</span>
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild className="cursor-pointer">
+										<Link to="/animals/fosterable" className="flex items-center w-full">
+											<Home className="mr-2 h-4 w-4" />
+											<span>Fosterable Animals</span>
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										onClick={handleLogout}
+										className="cursor-pointer"
+										variant="destructive"
+									>
+										<LogOut className="mr-2 h-4 w-4" />
+										<span>Sign Out</span>
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
+
+						{/* Mobile Toggle Button */}
 						<Button
 							variant="ghost"
 							size="icon"
@@ -110,12 +194,15 @@ export default function Layout() {
 						>
 							Stories
 						</Link>
-						<Button className="w-full mt-2" size="lg">
-							Donate Now
-						</Button>
+						<Link to="/donate" onClick={() => setMobileMenuOpen(false)} className="block pt-2">
+							<Button className="w-full" size="lg">
+								Donate Now
+							</Button>
+						</Link>
 					</div>
 				)}
 			</header>
+
 			<Outlet />
 
 			{/* Footer */}
