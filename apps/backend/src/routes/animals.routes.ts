@@ -1,4 +1,5 @@
 import {
+	adoptions,
 	animalMedicalRecords,
 	animals,
 	animalTimeline,
@@ -764,7 +765,7 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 	fastify.post(
 		"/:animalId/foster-apply",
 		{
-			preHandler: [publicAuthMiddleware, requireRole(["foster_volunteer"])],
+			preHandler: [publicAuthMiddleware, requireRole(["foster_volunteer", "adopter"])],
 		},
 		async (request: FastifyRequest, reply: FastifyReply) => {
 			const { animalId } = request.params as { animalId: string };
@@ -779,6 +780,31 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 				endDate: null,
 				userId: request.user!.id,
 				status: "applied",
+			});
+
+			return reply.success(null, "Foster application submitted successfully", 201);
+		},
+	);
+
+	/** Apply to adopt */
+	fastify.post(
+		"/:animalId/adopt-apply",
+		{
+			preHandler: [publicAuthMiddleware, requireRole(["adopter"])],
+		},
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { animalId } = request.params as { animalId: string };
+
+			if (!animalId) {
+				throw new ApiError("Animal ID is required", 400, "ANIMAL_ID_REQUIRED");
+			}
+
+			await fastify.db.insert(adoptions).values({
+				animalId: animalId,
+				applicationDate: new Date(),
+				approvalDate: null,
+				adopterId: request.user!.id,
+				matchScore: null,
 			});
 
 			return reply.success(null, "Foster application submitted successfully", 201);

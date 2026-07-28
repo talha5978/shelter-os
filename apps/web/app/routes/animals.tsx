@@ -78,7 +78,7 @@ export default function Animals() {
 	};
 
 	return (
-		<div>
+		<div className="pb-10">
 			{data && (
 				<AnimalsGrid
 					data={data}

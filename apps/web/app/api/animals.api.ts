@@ -57,5 +57,12 @@ export function createAnimalsApi(client = createApiClient()) {
 				body: JSON.stringify({}),
 			});
 		},
+
+		async applyAdoption(animalId: string) {
+			return await client.request<ApiResponse<AnimalProfile>>(`/animals/${animalId}/adopt-apply`, {
+				method: "POST",
+				body: JSON.stringify({}),
+			});
+		},
 	};
 }

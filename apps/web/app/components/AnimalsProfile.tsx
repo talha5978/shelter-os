@@ -12,15 +12,9 @@ interface PublicAnimalProfileSheetProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	data: AnimalProfile | null;
-	onApplyAdopt?: () => void;
 }
 
-export default function AnimalProfileSheet({
-	open,
-	onOpenChange,
-	data,
-	onApplyAdopt,
-}: PublicAnimalProfileSheetProps) {
+export default function AnimalProfileSheet({ open, onOpenChange, data }: PublicAnimalProfileSheetProps) {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [isSuccess, setIsSuccess] = useState(false);
 
@@ -42,6 +36,24 @@ export default function AnimalProfileSheet({
 		try {
 			const animalsApi = createAnimalsApi();
 			const resp = await animalsApi.applyFoster(animalId);
+
+			if (resp.success) {
+				setIsSuccess(true);
+			} else {
+				toast.error(resp.error?.message || "Failed to submit application");
+			}
+		} catch (error) {
+			toast.error("Something went wrong. Please try again.");
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const onApplyAdopt = async (animalId: string) => {
+		setIsSubmitting(true);
+		try {
+			const animalsApi = createAnimalsApi();
+			const resp = await animalsApi.applyAdoption(animalId);
 
 			if (resp.success) {
 				setIsSuccess(true);
@@ -246,7 +258,11 @@ export default function AnimalProfileSheet({
 				{/* Footer CTAs */}
 				<div className="p-4 border-t border-border/60 bg-muted/20 flex gap-2 shrink-0">
 					{animal.status === "adoption_ready" && (
-						<Button className="flex-1" onClick={onApplyAdopt}>
+						<Button
+							className="flex-1"
+							disabled={isSubmitting}
+							onClick={() => onApplyAdopt(animal.id)}
+						>
 							Apply to Adopt
 						</Button>
 					)}
@@ -257,7 +273,7 @@ export default function AnimalProfileSheet({
 							disabled={isSubmitting}
 							onClick={() => onApplyFoster(animal.id)}
 						>
-							{isSubmitting ? "Submitting..." : "Apply to Foster"}
+							Apply to Foster
 						</Button>
 					)}
 				</div>
