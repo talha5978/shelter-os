@@ -13,7 +13,7 @@ export type Species = InferEnum<typeof db.speciesEnum>;
 // ====================== TABLE TYPES ======================
 
 // Users
-export type User = InferSelectModel<typeof schema.users>;
+export type User = InferSelectModel<typeof db.users>;
 export type NewUser = InferInsertModel<typeof db.users>;
 
 // Animals
