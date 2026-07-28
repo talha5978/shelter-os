@@ -146,7 +146,7 @@ export const fosters = pgTable(
 			.references(() => animals.id, { onDelete: "cascade" })
 			.notNull(),
 
-		startDate: timestamp("start_date", { withTimezone: true }).notNull(),
+		startDate: timestamp("start_date", { withTimezone: true }),
 		endDate: timestamp("end_date", { withTimezone: true }),
 
 		status: text("status").default("active"), // active, completed, etc.

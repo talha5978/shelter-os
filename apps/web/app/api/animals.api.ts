@@ -50,5 +50,12 @@ export function createAnimalsApi(client = createApiClient()) {
 
 			return await queryClient.fetchQuery(qo);
 		},
+
+		async applyFoster(animalId: string) {
+			return await client.request<ApiResponse<AnimalProfile>>(`/animals/${animalId}/foster-apply`, {
+				method: "POST",
+				body: JSON.stringify({}),
+			});
+		},
 	};
 }

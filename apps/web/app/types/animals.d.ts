@@ -36,7 +36,7 @@ export type AnimalProfile = {
 		age: string | number | null;
 		gender: string | null;
 		weight: string | number | null;
-		status: string;
+		status: "foster" | "adoption_ready";
 		description: string | null;
 		personality: string | null;
 		photos: MediaAsset[];

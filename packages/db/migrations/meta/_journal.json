@@ -15,6 +15,13 @@
 			"when": 1784911201288,
 			"tag": "0001_overrated_hulk",
 			"breakpoints": true
+		},
+		{
+			"idx": 2,
+			"version": "7",
+			"when": 1785240252008,
+			"tag": "0002_overconfident_husk",
+			"breakpoints": true
 		}
 	]
 }

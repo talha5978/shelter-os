@@ -2,6 +2,7 @@ import {
 	animalMedicalRecords,
 	animals,
 	animalTimeline,
+	fosters,
 	type AnimalStatus,
 	type Gender,
 	type MediaAsset,
@@ -758,4 +759,29 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			"Animal public profile fetched successfully",
 		);
 	});
+
+	/** Apply to foster */
+	fastify.post(
+		"/:animalId/foster-apply",
+		{
+			preHandler: [publicAuthMiddleware, requireRole(["foster_volunteer"])],
+		},
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { animalId } = request.params as { animalId: string };
+
+			if (!animalId) {
+				throw new ApiError("Animal ID is required", 400, "ANIMAL_ID_REQUIRED");
+			}
+
+			await fastify.db.insert(fosters).values({
+				animalId: animalId,
+				startDate: null,
+				endDate: null,
+				userId: request.user!.id,
+				status: "applied",
+			});
+
+			return reply.success(null, "Foster application submitted successfully", 201);
+		},
+	);
 }

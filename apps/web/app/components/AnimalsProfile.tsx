@@ -2,15 +2,17 @@ import { Sheet, SheetContent } from "~/components/ui/sheet";
 import { Badge } from "~/components/ui/badge";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
-import { PawPrint, MapPin, Heart, Syringe, Clock } from "lucide-react";
+import { PawPrint, MapPin, Heart, Syringe, Clock, CheckCircle2, Mail } from "lucide-react";
 import type { AnimalProfile } from "~/types/animals";
+import { createAnimalsApi } from "~/api/animals.api";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface PublicAnimalProfileSheetProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	data: AnimalProfile | null;
 	onApplyAdopt?: () => void;
-	onApplyFoster?: () => void;
 }
 
 export default function AnimalProfileSheet({
@@ -18,8 +20,10 @@ export default function AnimalProfileSheet({
 	onOpenChange,
 	data,
 	onApplyAdopt,
-	onApplyFoster,
 }: PublicAnimalProfileSheetProps) {
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isSuccess, setIsSuccess] = useState(false);
+
 	if (!data) return null;
 
 	const { animal, timeline } = data;
@@ -32,6 +36,61 @@ export default function AnimalProfileSheet({
 			: animal.status === "foster"
 				? "Looking for Foster"
 				: animal.status;
+
+	const onApplyFoster = async (animalId: string) => {
+		setIsSubmitting(true);
+		try {
+			const animalsApi = createAnimalsApi();
+			const resp = await animalsApi.applyFoster(animalId);
+
+			if (resp.success) {
+				setIsSuccess(true);
+			} else {
+				toast.error(resp.error?.message || "Failed to submit application");
+			}
+		} catch (error) {
+			toast.error("Something went wrong. Please try again.");
+		} finally {
+			setIsSubmitting(false);
+		}
+	};
+
+	const handleClose = () => {
+		setIsSuccess(false);
+		onOpenChange(false);
+	};
+
+	if (isSuccess) {
+		return (
+			<Sheet open={open} onOpenChange={handleClose}>
+				<SheetContent className="sm:max-w-md w-full flex flex-col items-center justify-center p-8 text-center">
+					<div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 flex items-center justify-center mb-5">
+						<CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+					</div>
+
+					<h2 className="text-2xl font-bold tracking-tight mb-2">Application Received!</h2>
+
+					<p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-1">
+						Thank you for your interest in{" "}
+						<span className="font-medium text-foreground">{animal.name || "this animal"}</span>.
+					</p>
+
+					<p className="text-sm text-muted-foreground leading-relaxed max-w-xs mb-6">
+						Our team will review your application and contact you shortly.
+					</p>
+
+					<div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg mb-8">
+						<Mail className="w-3.5 h-3.5" />
+						<span>Check your email for updates</span>
+					</div>
+
+					<Button onClick={handleClose} className="w-full max-w-50">
+						Done
+					</Button>
+				</SheetContent>
+			</Sheet>
+		);
+	}
 
 	return (
 		<Sheet open={open} onOpenChange={onOpenChange}>
@@ -195,9 +254,10 @@ export default function AnimalProfileSheet({
 						<Button
 							variant={animal.status === "foster" ? "default" : "outline"}
 							className="flex-1"
-							onClick={onApplyFoster}
+							disabled={isSubmitting}
+							onClick={() => onApplyFoster(animal.id)}
 						>
-							Apply to Foster
+							{isSubmitting ? "Submitting..." : "Apply to Foster"}
 						</Button>
 					)}
 				</div>
