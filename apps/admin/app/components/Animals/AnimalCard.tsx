@@ -203,12 +203,19 @@ export function AnimalCard({ animal, onAnimalSelect }: { animal: AnimalItem; onA
 										const size = searchParams.get("size");
 										const page = searchParams.get("page");
 										const q = searchParams.get("q");
-										setSearchParams({
-											...(size && { size }),
-											...(page && { page }),
-											...(q && { q }),
-											timeline: String(animal.id),
-										});
+										setSearchParams(
+											{
+												...(size && { size }),
+												...(page && { page }),
+												...(q && { q }),
+												timeline: String(animal.id),
+											},
+											{
+												state: {
+													suppressLoadingBar: true,
+												},
+											},
+										);
 										onAnimalSelect();
 									}}
 								>

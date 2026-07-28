@@ -2,7 +2,7 @@ import type { ApiResponse } from "~/types/response";
 import { createApiClient } from "~/api/client";
 import { queryOptions } from "@tanstack/react-query";
 import { queryClient } from "~/lib/tanstackQueryClient";
-import type { AllUsersResponse } from "~/types/users";
+import type { AllUsersResponse, UserDetails } from "~/types/users";
 import { invalidateCache } from "~/utils/invalidate";
 
 export function createUsersApi(client = createApiClient()) {
@@ -46,6 +46,7 @@ export function createUsersApi(client = createApiClient()) {
 			);
 
 			await invalidateCache("all_users");
+			await invalidateCache(`user:${userId}`);
 
 			return response;
 		},
@@ -65,6 +66,17 @@ export function createUsersApi(client = createApiClient()) {
 			await invalidateCache("all_users");
 
 			return response;
+		},
+
+		async fetchUserDetails(userId: string) {
+			const qo = queryOptions<ApiResponse<UserDetails>>({
+				queryKey: [`user:${userId}`],
+				queryFn: async () => {
+					return await client.request<ApiResponse<UserDetails>>(`/users/${userId}`);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
 		},
 	};
 }

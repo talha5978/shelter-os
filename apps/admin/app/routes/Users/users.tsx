@@ -1,6 +1,7 @@
 import { getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontal, Search, Check, AlertTriangle, RefreshCw, Crown, X, Plus } from "lucide-react";
 import { useState } from "react";
+import { useSearchParams } from "react-router";
 import { useRevalidator } from "react-router";
 import { Form, Link, type LoaderFunctionArgs, useLoaderData, useLocation, useNavigation } from "react-router";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
 import AddStaffSheet from "~/components/Users/AddStaffSheet";
+import UserDetailsSheet from "~/components/Users/UserDetailsSheet";
 import type { AllUsersResponse } from "~/types/users";
 import { invalidateCache } from "~/utils/invalidate";
 import { GetPaginationControls } from "~/utils/PaginationControls";
@@ -36,30 +38,39 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 	const { q, pageIndex, pageSize } = getPaginationQueryPayload({ request });
 
-	const studentsApi = createUsersApi(client);
-	const data = await studentsApi.getAllUsers({
+	const usersApi = createUsersApi(client);
+	const data = await usersApi.getAllUsers({
 		search: q,
 		pageIndex,
 		pageSize,
 	});
 
-	return data;
+	const url = new URL(request.url);
+	const userId = url.searchParams.get("userId")?.trim() ?? "";
+	let userDetails = null;
+	if (userId) {
+		userDetails = await usersApi.fetchUserDetails(userId);
+	}
+
+	return { allUsers: data, userDetails };
 };
 
 export default function AdminUsersPage() {
-	const loaderData = useLoaderData<typeof loader>();
+	const { allUsers, userDetails } = useLoaderData<typeof loader>();
 
 	const navigation = useNavigation();
 	const location = useLocation();
 	const revalidator = useRevalidator();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [open, setOpen] = useState(false);
+	const [detailsSheetOpen, setDetailsSheetOpen] = useState(false);
 
 	const isFetching = navigation.state === "loading" && navigation.location?.pathname === location.pathname;
 
-	const studentsData = loaderData.success ? loaderData.data : null;
-	const users = studentsData?.users ?? [];
-	const pagination = studentsData?.pagination;
+	const usersData = allUsers.success ? allUsers.data : null;
+	const users = usersData?.users ?? [];
+	const pagination = usersData?.pagination;
 
 	async function toggleVerification(userId: string) {
 		const usersApi = createUsersApi();
@@ -150,9 +161,29 @@ export default function AdminUsersPage() {
 							</Button>
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
-							<Link to={`/admin/users/${user.id}`} prefetch="intent">
-								<DropdownMenuItem>View Details</DropdownMenuItem>
-							</Link>
+							<DropdownMenuItem
+								onClick={() => {
+									const size = searchParams.get("size");
+									const page = searchParams.get("page");
+									const q = searchParams.get("q");
+									setSearchParams(
+										{
+											...(size && { size }),
+											...(page && { page }),
+											...(q && { q }),
+											userId: user.id,
+										},
+										{
+											state: {
+												suppressLoadingBar: true,
+											},
+										},
+									);
+									setDetailsSheetOpen(true);
+								}}
+							>
+								View Details
+							</DropdownMenuItem>
 
 							{!user.isVerified ? (
 								<DropdownMenuItem onClick={() => toggleVerification(user.id)}>
@@ -189,8 +220,8 @@ export default function AdminUsersPage() {
 		},
 	});
 
-	if (!loaderData.success) {
-		const error = loaderData.error;
+	if (!allUsers.success) {
+		const error = allUsers.error;
 		return (
 			<div className="flex h-[70vh] items-center justify-center p-6">
 				<div className="max-w-md w-full text-center">
@@ -272,6 +303,28 @@ export default function AdminUsersPage() {
 				</div>
 			</div>
 			<AddStaffSheet open={open} onOpenChange={setOpen} />
+			<UserDetailsSheet
+				open={detailsSheetOpen}
+				onOpenChange={() => {
+					const size = searchParams.get("size");
+					const page = searchParams.get("page");
+					const q = searchParams.get("q");
+					setSearchParams(
+						{
+							...(size && { size }),
+							...(page && { page }),
+							...(q && { q }),
+						},
+						{
+							state: {
+								suppressLoadingBar: true,
+							},
+						},
+					);
+					setDetailsSheetOpen(false);
+				}}
+				data={userDetails?.success ? userDetails.data : null}
+			/>
 		</>
 	);
 }

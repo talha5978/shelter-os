@@ -264,11 +264,18 @@ export default function AnimalsGrid({
 												const q = searchParams.get("q");
 												const page = searchParams.get("page");
 
-												setSearchParams({
-													...(q && { q }),
-													...(page && { page }),
-													animalId: String(animal.id),
-												});
+												setSearchParams(
+													{
+														...(q && { q }),
+														...(page && { page }),
+														animalId: String(animal.id),
+													},
+													{
+														state: {
+															suppressLoadingBar: true,
+														},
+													},
+												);
 
 												setOpen(true);
 											}}

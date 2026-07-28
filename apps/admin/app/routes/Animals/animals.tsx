@@ -210,11 +210,18 @@ export default function AnimalsDirectoryPage() {
 						const size = searchParams.get("size");
 						const page = searchParams.get("page");
 						const q = searchParams.get("q");
-						setSearchParams({
-							...(size && { size }),
-							...(page && { page }),
-							...(q && { q }),
-						});
+						setSearchParams(
+							{
+								...(size && { size }),
+								...(page && { page }),
+								...(q && { q }),
+							},
+							{
+								state: {
+									suppressLoadingBar: true,
+								},
+							},
+						);
 						setOpen(!open);
 					}}
 				/>
