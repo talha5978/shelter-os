@@ -53,6 +53,6 @@ export type UserDetails = {
 		animalName: string | null;
 		animalSpecies: Species | null;
 		animalBreed: string | null;
-		animalPhotos: unknown;
+		animalPhotos: MediaAsset[];
 	}[];
 };

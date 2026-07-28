@@ -276,8 +276,18 @@ export default function UserDetailsSheet({ open, onOpenChange, data }: UserDetai
 											key={item.id}
 											className="flex items-center gap-3 rounded-lg border border-border/60 p-3"
 										>
-											<div className="h-12 w-12 rounded-md overflow-hidden bg-muted shrink-0 flex items-center justify-center">
-												<PawPrint className="w-5 h-5 text-muted-foreground/40" />
+											<div className="h-12 w-12 rounded-md overflow-hidden bg-muted shrink-0">
+												{item.animalPhotos && item.animalPhotos.length > 0 ? (
+													<img
+														src={item.animalPhotos[0].url}
+														alt={item.animalName || "Animal"}
+														className="h-full w-full object-cover"
+													/>
+												) : (
+													<div className="h-full w-full flex items-center justify-center">
+														<PawPrint className="w-5 h-5 text-muted-foreground/40" />
+													</div>
+												)}
 											</div>
 											<div className="min-w-0 flex-1">
 												<p className="text-sm font-medium truncate">
