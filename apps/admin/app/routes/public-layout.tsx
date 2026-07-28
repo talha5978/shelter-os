@@ -1,8 +1,8 @@
 import { Navigate, Outlet } from "react-router";
-import { useRouteLoaderData } from "react-router";
+import useAuth from "~/hooks/useAuth";
 
 export default function PublicLayout() {
-	const { isAuthenticated } = useRouteLoaderData("root") as { isAuthenticated: boolean };
+	const { isAuthenticated } = useAuth();
 
 	if (isAuthenticated) {
 		return <Navigate to="/" replace />;

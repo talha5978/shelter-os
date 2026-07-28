@@ -4,7 +4,7 @@ export default [
 	layout("./routes/public-layout.tsx", [route("sign-in", "./routes/Auth/SignIn.tsx")]),
 
 	layout("./routes/protected-layout.tsx", [
-		index("./routes/home.tsx"),
+		index("./routes/dashboard.tsx"),
 
 		...prefix("animals", [
 			index("./routes/Animals/animals.tsx"),

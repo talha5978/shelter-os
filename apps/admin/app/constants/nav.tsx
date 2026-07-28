@@ -4,7 +4,7 @@ import type { NavItem } from "~/types/nav";
 export const navLinks: NavItem[] = [
 	{
 		title: "Dashboard",
-		url: "/dashboard",
+		url: "/",
 		icon: <LayoutDashboard size={18} />,
 	},
 	{
