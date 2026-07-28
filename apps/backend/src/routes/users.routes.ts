@@ -1,3 +1,4 @@
+import { hashPassword } from "@workspace/auth";
 import { users } from "@workspace/db";
 import { and, count, desc, eq, ilike, ne, or } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
@@ -87,6 +88,57 @@ export async function usersRoutes(fastify: FastifyInstance) {
 			await fastify.db.update(users).set({ isVerified: !user.isVerified }).where(eq(users.id, userId));
 
 			return reply.success(null, `User ${user.isVerified ? "unverified" : "verified"} successfully`);
+		},
+	);
+
+	/** Create staff member profile */
+	fastify.post(
+		"/staff",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin"])] },
+		async (request, reply) => {
+			const { fullName, email, phone, address, password } = request.body as {
+				fullName: string;
+				email: string;
+				phone: string | null;
+				address: string | null;
+				password: string;
+			};
+
+			if (!fullName || !email || !password) {
+				throw new ApiError("Full name, email and password are required", 400, "MISSING_FIELDS");
+			}
+
+			// Check if email already exists
+			const existingUser = await fastify.db.query.users.findFirst({
+				where: eq(users.email, email.toLowerCase().trim()),
+			});
+
+			if (existingUser) {
+				throw new ApiError("A user with this email already exists", 409, "EMAIL_ALREADY_EXISTS");
+			}
+
+			const hashedPassword = await hashPassword(password);
+
+			const [newStaff] = await fastify.db
+				.insert(users)
+				.values({
+					fullName: fullName.trim(),
+					email: email.toLowerCase().trim(),
+					phone: phone?.trim() || null,
+					address: address?.trim() || null,
+					password: hashedPassword,
+					role: "shelter_staff",
+					isVerified: true,
+				})
+				.returning({
+					id: users.id,
+				});
+
+			if (!newStaff) {
+				throw new ApiError("Failed to create staff member", 500, "FAILED_TO_CREATE_STAFF");
+			}
+
+			return reply.success(null, "Shelter staff member created successfully", 201);
 		},
 	);
 }

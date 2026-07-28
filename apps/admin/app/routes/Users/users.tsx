@@ -1,5 +1,6 @@
 import { getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontal, Search, Check, AlertTriangle, RefreshCw, Crown, X } from "lucide-react";
+import { MoreHorizontal, Search, Check, AlertTriangle, RefreshCw, Crown, X, Plus } from "lucide-react";
+import { useState } from "react";
 import { useRevalidator } from "react-router";
 import { Form, Link, type LoaderFunctionArgs, useLoaderData, useLocation, useNavigation } from "react-router";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ import {
 	DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Input } from "~/components/ui/input";
+import AddStaffSheet from "~/components/Users/AddStaffSheet";
 import type { AllUsersResponse } from "~/types/users";
 import { invalidateCache } from "~/utils/invalidate";
 import { GetPaginationControls } from "~/utils/PaginationControls";
@@ -50,6 +52,8 @@ export default function AdminUsersPage() {
 	const navigation = useNavigation();
 	const location = useLocation();
 	const revalidator = useRevalidator();
+
+	const [open, setOpen] = useState(false);
 
 	const isFetching = navigation.state === "loading" && navigation.location?.pathname === location.pathname;
 
@@ -222,44 +226,52 @@ export default function AdminUsersPage() {
 	}
 
 	return (
-		<div className="flex-1 flex flex-col gap-6 p-6">
-			<div className="flex items-center justify-between flex-wrap gap-2">
-				<div>
-					<h1 className="text-3xl font-semibold tracking-tight">Users Directory</h1>
-					<p className="text-muted-foreground">
-						Manage shelter staff and volunteers accounts, verification, and participation
-					</p>
-				</div>
-			</div>
+		<>
+			<div className="flex-1 flex flex-col gap-6 p-6">
+				<div className="flex items-center justify-between flex-wrap gap-2">
+					<div>
+						<h1 className="text-3xl font-semibold tracking-tight">Users Directory</h1>
+						<p className="text-muted-foreground">
+							Manage shelter staff and volunteers accounts, verification, and participation
+						</p>
+					</div>
 
-			<div className="space-y-4">
-				<div className="flex justify-between items-center">
-					<Form method="get" className="max-w-md">
-						<div className="relative">
-							<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-							<Input
-								placeholder="Search by name, email or student ID..."
-								name="q"
-								className="pl-10 min-w-md"
-							/>
-						</div>
-					</Form>
-
-					<TableColumnsToggle table={table} />
+					<Button size="lg" onClick={() => setOpen(true)}>
+						<Plus className="mr-1" />
+						Add New Staff
+					</Button>
 				</div>
 
-				{isFetching ? (
-					<DataTableSkeleton noOfSkeletons={6} columns={tableColumns} />
-				) : (
-					<DataTable
-						table={table}
-						onPageChange={onPageChange}
-						onPageSizeChange={onPageSizeChange}
-						pageSize={pagination?.pageSize || 10}
-						total={pagination?.total || 0}
-					/>
-				)}
+				<div className="space-y-4">
+					<div className="flex justify-between items-center">
+						<Form method="get" className="max-w-md">
+							<div className="relative">
+								<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+								<Input
+									placeholder="Search by name, email or student ID..."
+									name="q"
+									className="pl-10 min-w-md"
+								/>
+							</div>
+						</Form>
+
+						<TableColumnsToggle table={table} />
+					</div>
+
+					{isFetching ? (
+						<DataTableSkeleton noOfSkeletons={6} columns={tableColumns} />
+					) : (
+						<DataTable
+							table={table}
+							onPageChange={onPageChange}
+							onPageSizeChange={onPageSizeChange}
+							pageSize={pagination?.pageSize || 10}
+							total={pagination?.total || 0}
+						/>
+					)}
+				</div>
 			</div>
-		</div>
+			<AddStaffSheet open={open} onOpenChange={setOpen} />
+		</>
 	);
 }

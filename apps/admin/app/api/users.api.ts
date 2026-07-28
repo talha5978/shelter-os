@@ -49,5 +49,22 @@ export function createUsersApi(client = createApiClient()) {
 
 			return response;
 		},
+
+		async createStaff(data: {
+			fullName: string;
+			email: string;
+			phone: string | null;
+			address: string | null;
+			password: string;
+		}) {
+			const response = await client.request<ApiResponse<null>>(`/users/staff`, {
+				method: "POST",
+				body: JSON.stringify(data),
+			});
+
+			await invalidateCache("all_users");
+
+			return response;
+		},
 	};
 }

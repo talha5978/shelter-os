@@ -15,7 +15,7 @@ export default [
 
 		route("medical-records", "./routes/Animals/all-medical-records.tsx"),
 
-		...prefix("users", [index("./routes/Users/users.tsx")]),
+		route("users", "./routes/Users/users.tsx"),
 
 		route("invalidate", "./routes/invalidate.ts"),
 	]),
