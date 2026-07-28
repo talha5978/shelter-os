@@ -13,7 +13,7 @@ import type {
 } from "@workspace/db";
 import { createApiClient } from "~/api/client";
 import { queryClient } from "~/lib/tanstackQueryClient";
-import type { AllAnimalsResponse, AllMedicalRecordsResp } from "~/types/animals";
+import type { AllAnimalsResponse, AllFosterRequests, AllMedicalRecordsResp } from "~/types/animals";
 import type { ApiResponse } from "~/types/response";
 import { invalidateCache } from "~/utils/invalidate";
 
@@ -228,6 +228,60 @@ export function createAnimalsApi(client = createApiClient()) {
 			});
 
 			return await queryClient.fetchQuery(qo);
+		},
+
+		async getFosterRequests({
+			search,
+			pageIndex,
+			pageSize,
+		}: {
+			search?: string;
+			pageIndex?: number;
+			pageSize?: number;
+		}) {
+			const queryParams = new URLSearchParams();
+
+			if (search) queryParams.set("search", search);
+			if (pageIndex) queryParams.set("pageIndex", String(pageIndex));
+			if (pageSize) queryParams.set("pageSize", String(pageSize));
+
+			const qo = queryOptions<ApiResponse<AllFosterRequests>>({
+				queryKey: [`all_fosters`, queryParams.toString()],
+				queryFn: async () => {
+					return await client.request<ApiResponse<AllFosterRequests>>(
+						`/animals/fosters${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
+					);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
+		},
+
+		async approveFosterRequest(fosterId: string) {
+			const resp = await client.request<ApiResponse<null>>(`/animals/fosters/${fosterId}/approve`, {
+				method: "POST",
+				body: JSON.stringify({}),
+			});
+			await invalidateCache("all_fosters");
+			return resp;
+		},
+
+		async terminateFosterRequest(fosterId: string) {
+			const resp = await client.request<ApiResponse<null>>(`/animals/fosters/${fosterId}/terminate`, {
+				method: "POST",
+				body: JSON.stringify({}),
+			});
+			await invalidateCache("all_fosters");
+			return resp;
+		},
+
+		async rejectFosterRequest(fosterId: string) {
+			const resp = await client.request<ApiResponse<null>>(`/animals/fosters/${fosterId}/reject`, {
+				method: "POST",
+				body: JSON.stringify({}),
+			});
+			await invalidateCache("all_fosters");
+			return resp;
 		},
 	};
 }

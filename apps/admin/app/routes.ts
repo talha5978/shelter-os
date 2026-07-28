@@ -17,6 +17,8 @@ export default [
 
 		route("users", "./routes/Users/users.tsx"),
 
+		route("fosters", "./routes/Animals/fosters.tsx"),
+
 		route("invalidate", "./routes/invalidate.ts"),
 	]),
 ] satisfies RouteConfig;

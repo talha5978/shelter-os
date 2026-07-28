@@ -4,6 +4,7 @@ import {
 	animals,
 	animalTimeline,
 	fosters,
+	users,
 	type AnimalStatus,
 	type Gender,
 	type MediaAsset,
@@ -808,6 +809,172 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			});
 
 			return reply.success(null, "Foster application submitted successfully", 201);
+		},
+	);
+
+	/** Get fosters page data */
+	fastify.get(
+		"/fosters",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const {
+				pageIndex: rPageIndex = "1",
+				pageSize = "12",
+				search = "",
+				status,
+			} = request.query as {
+				pageIndex?: string;
+				pageSize?: string;
+				search?: string;
+				status?: string;
+			};
+
+			const pageIndex = Math.max(1, parseInt(rPageIndex));
+			const limit = Math.min(50, parseInt(pageSize));
+			const offset = (pageIndex - 1) * limit;
+
+			// Build conditions
+			const conditions = [];
+
+			// Optional status filter (e.g. "applied", "active", "completed")
+			if (status && status !== "all") {
+				conditions.push(eq(fosters.status, status));
+			}
+
+			// Search across foster name, email, animal name, animalId
+			if (search.trim()) {
+				conditions.push(
+					or(
+						ilike(users.fullName, `%${search}%`),
+						ilike(users.email, `%${search}%`),
+						ilike(animals.name, `%${search}%`),
+						ilike(animals.animalId, `%${search}%`),
+					)!,
+				);
+			}
+
+			const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+			// Total count
+			const [{ count: total }] = await fastify.db
+				.select({ count: count() })
+				.from(fosters)
+				.leftJoin(users, eq(fosters.userId, users.id))
+				.leftJoin(animals, eq(fosters.animalId, animals.id))
+				.where(whereClause);
+
+			// Main query
+			const fosterRequests = await fastify.db
+				.select({
+					// Foster record
+					id: fosters.id,
+					status: fosters.status,
+					startDate: fosters.startDate,
+					endDate: fosters.endDate,
+					matchScore: fosters.matchScore,
+					notes: fosters.notes,
+					createdAt: fosters.createdAt,
+					updatedAt: fosters.updatedAt,
+
+					// Foster user info
+					userId: users.id,
+					fullName: users.fullName,
+					email: users.email,
+					phone: users.phone,
+					address: users.address,
+					availability: users.availability,
+					location: users.location,
+
+					// Animal basic info
+					animalId: animals.id,
+					animalCode: animals.animalId,
+					animalName: animals.name,
+					animalBreed: animals.breed,
+					animalSpecies: animals.species,
+					animalPhotos: animals.photos,
+					animalStatus: animals.status,
+				})
+				.from(fosters)
+				.leftJoin(users, eq(fosters.userId, users.id))
+				.leftJoin(animals, eq(fosters.animalId, animals.id))
+				.where(whereClause)
+				.orderBy(desc(fosters.createdAt))
+				.limit(limit)
+				.offset(offset);
+
+			const totalPages = Math.ceil(Number(total) / limit);
+
+			return reply.success(
+				{
+					fosters: fosterRequests,
+					pagination: {
+						page: pageIndex,
+						pageSize: limit,
+						total: Number(total),
+						totalPages,
+						hasNext: pageIndex < totalPages,
+						hasPrev: pageIndex > 1,
+					},
+				},
+				"Foster requests fetched successfully",
+			);
+		},
+	);
+
+	/** Approve a foster request */
+	fastify.post(
+		"/fosters/:fosterId/approve",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { fosterId } = request.params as { fosterId: string };
+
+			if (!fosterId) {
+				throw new ApiError("Foster ID is required", 400, "FOSTER_ID_REQUIRED");
+			}
+
+			await fastify.db
+				.update(fosters)
+				.set({ status: "approved", startDate: new Date() })
+				.where(eq(fosters.id, fosterId));
+
+			return reply.success(null, "Foster request approved successfully");
+		},
+	);
+
+	/** End a foster term */
+	fastify.post(
+		"/fosters/:fosterId/terminate",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { fosterId } = request.params as { fosterId: string };
+
+			if (!fosterId) {
+				throw new ApiError("Foster ID is required", 400, "FOSTER_ID_REQUIRED");
+			}
+
+			await fastify.db
+				.update(fosters)
+				.set({ status: "ended", endDate: new Date() })
+				.where(eq(fosters.id, fosterId));
+
+			return reply.success(null, "Foster request terminated successfully");
+		},
+	);
+
+	/** Reject a foster request*/
+	fastify.post(
+		"/fosters/:fosterId/reject",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { fosterId } = request.params as { fosterId: string };
+
+			if (!fosterId) {
+				throw new ApiError("Foster ID is required", 400, "FOSTER_ID_REQUIRED");
+			}
+
+			await fastify.db.update(fosters).set({ status: "rejected" }).where(eq(fosters.id, fosterId));
+
+			return reply.success(null, "Foster request rejected and terminated successfully");
 		},
 	);
 }
