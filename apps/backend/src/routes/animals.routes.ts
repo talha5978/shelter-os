@@ -1033,4 +1033,125 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			return reply.success(null, "Foster request rejected and terminated successfully");
 		},
 	);
+
+	/** Get adoptions page data */
+	fastify.get(
+		"/adoptions",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const {
+				pageIndex: rPageIndex = "1",
+				pageSize = "12",
+				search = "",
+			} = request.query as {
+				pageIndex?: string;
+				pageSize?: string;
+				search?: string;
+			};
+
+			const pageIndex = Math.max(1, parseInt(rPageIndex));
+			const limit = Math.min(50, parseInt(pageSize));
+			const offset = (pageIndex - 1) * limit;
+
+			// Build conditions
+			const conditions = [];
+
+			// Search across foster name, email, animal name, animalId
+			if (search.trim()) {
+				conditions.push(
+					or(
+						ilike(users.fullName, `%${search}%`),
+						ilike(users.email, `%${search}%`),
+						ilike(animals.name, `%${search}%`),
+						ilike(animals.animalId, `%${search}%`),
+					)!,
+				);
+			}
+
+			const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+			// Total count
+			const [{ count: total }] = await fastify.db
+				.select({ count: count() })
+				.from(adoptions)
+				.leftJoin(users, eq(adoptions.adopterId, users.id))
+				.leftJoin(animals, eq(adoptions.animalId, animals.id))
+				.where(whereClause);
+
+			// Main query
+			const adoptionRequests = await fastify.db
+				.select({
+					// Foster record
+					id: adoptions.id,
+					applicationDate: adoptions.applicationDate,
+					approvalDate: adoptions.approvalDate,
+					matchScore: adoptions.matchScore,
+					notes: adoptions.notes,
+					createdAt: adoptions.createdAt,
+
+					// Foster user info
+					userId: users.id,
+					fullName: users.fullName,
+					email: users.email,
+					phone: users.phone,
+					address: users.address,
+					availability: users.availability,
+					location: users.location,
+
+					// Animal basic info
+					animalId: animals.id,
+					animalCode: animals.animalId,
+					animalName: animals.name,
+					animalBreed: animals.breed,
+					animalSpecies: animals.species,
+					animalPhotos: animals.photos,
+					animalStatus: animals.status,
+				})
+				.from(adoptions)
+				.leftJoin(users, eq(adoptions.adopterId, users.id))
+				.leftJoin(animals, eq(adoptions.animalId, animals.id))
+				.where(whereClause)
+				.orderBy(desc(adoptions.applicationDate))
+				.limit(limit)
+				.offset(offset);
+
+			const totalPages = Math.ceil(Number(total) / limit);
+
+			return reply.success(
+				{
+					adoptions: adoptionRequests,
+					pagination: {
+						page: pageIndex,
+						pageSize: limit,
+						total: Number(total),
+						totalPages,
+						hasNext: pageIndex < totalPages,
+						hasPrev: pageIndex > 1,
+					},
+				},
+				"Adoptions requests fetched successfully",
+			);
+		},
+	);
+
+	/** Approve an adoption request */
+	fastify.post(
+		"/adoption/:id/approve",
+		{ preHandler: [adminAuthMiddleware, requireRole(["admin", "shelter_staff"])] },
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const { id } = request.params as { id: string };
+
+			if (!id) {
+				throw new ApiError(
+					"Id associated with the adoption request is required",
+					400,
+					"ADOPTION_ID_REQUIRED",
+				);
+			}
+
+			await fastify.db.update(adoptions).set({ approvalDate: new Date() }).where(eq(adoptions.id, id));
+
+			return reply.success(null, "Adoption request approved successfully");
+		},
+	);
 }

@@ -13,7 +13,12 @@ import type {
 } from "@workspace/db";
 import { createApiClient } from "~/api/client";
 import { queryClient } from "~/lib/tanstackQueryClient";
-import type { AllAnimalsResponse, AllFosterRequests, AllMedicalRecordsResp } from "~/types/animals";
+import type {
+	AllAdoptionRequests,
+	AllAnimalsResponse,
+	AllFosterRequests,
+	AllMedicalRecordsResp,
+} from "~/types/animals";
 import type { ApiResponse } from "~/types/response";
 import { invalidateCache } from "~/utils/invalidate";
 
@@ -257,6 +262,33 @@ export function createAnimalsApi(client = createApiClient()) {
 			return await queryClient.fetchQuery(qo);
 		},
 
+		async getAdoptionsRequests({
+			search,
+			pageIndex,
+			pageSize,
+		}: {
+			search?: string;
+			pageIndex?: number;
+			pageSize?: number;
+		}) {
+			const queryParams = new URLSearchParams();
+
+			if (search) queryParams.set("search", search);
+			if (pageIndex) queryParams.set("pageIndex", String(pageIndex));
+			if (pageSize) queryParams.set("pageSize", String(pageSize));
+
+			const qo = queryOptions<ApiResponse<AllAdoptionRequests>>({
+				queryKey: [`all_adoptions`, queryParams.toString()],
+				queryFn: async () => {
+					return await client.request<ApiResponse<AllAdoptionRequests>>(
+						`/animals/adoptions${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
+					);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
+		},
+
 		async approveFosterRequest(fosterId: string) {
 			const resp = await client.request<ApiResponse<null>>(`/animals/fosters/${fosterId}/approve`, {
 				method: "POST",
@@ -281,6 +313,16 @@ export function createAnimalsApi(client = createApiClient()) {
 				body: JSON.stringify({}),
 			});
 			await invalidateCache("all_fosters");
+			return resp;
+		},
+
+		async approveAdoptionRequest(fosterId: string) {
+			const resp = await client.request<ApiResponse<null>>(`/animals/adoption/${fosterId}/approve`, {
+				method: "POST",
+				body: JSON.stringify({}),
+			});
+			await invalidateCache("all_adoptions");
+			// TODO: invalidate the user details cache for all of history fetched in the user details query
 			return resp;
 		},
 	};

@@ -85,3 +85,36 @@ export type AllFosterRequests = {
 		hasPrev: boolean;
 	};
 };
+
+export type AllAdoptionRequests = {
+	adoptions: {
+		id: string;
+		applicationDate: Date;
+		approvalDate: Date | null;
+		matchScore: number | null;
+		notes: string | null;
+		createdAt: Date;
+		userId: string | null;
+		fullName: string | null;
+		email: string | null;
+		phone: string | null;
+		address: string | null;
+		availability: string | null;
+		location: string | null;
+		animalId: string | null;
+		animalCode: string | null;
+		animalName: string | null;
+		animalBreed: string | null;
+		animalSpecies: Species | null;
+		animalPhotos: MediaAsset[] | null;
+		animalStatus: AnimalStatus | null;
+	}[];
+	pagination: {
+		page: number;
+		pageSize: number;
+		total: number;
+		totalPages: number;
+		hasNext: boolean;
+		hasPrev: boolean;
+	};
+};
