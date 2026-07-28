@@ -770,16 +770,44 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 		},
 		async (request: FastifyRequest, reply: FastifyReply) => {
 			const { animalId } = request.params as { animalId: string };
+			const userId = request.user!.id;
 
 			if (!animalId) {
 				throw new ApiError("Animal ID is required", 400, "ANIMAL_ID_REQUIRED");
 			}
 
+			// Check if already applied
+			const existing = await fastify.db.query.fosters.findFirst({
+				where: and(eq(fosters.animalId, animalId), eq(fosters.userId, userId)),
+			});
+
+			if (existing) {
+				throw new ApiError("You have already applied to foster this animal", 409, "ALREADY_APPLIED");
+			}
+
+			// also check animal exists + is fosterable
+			const animal = await fastify.db.query.animals.findFirst({
+				where: eq(animals.id, animalId),
+				columns: { id: true, status: true },
+			});
+
+			if (!animal) {
+				throw new ApiError("Animal not found", 404, "ANIMAL_NOT_FOUND");
+			}
+
+			if (!["foster", "adoption_ready"].includes(animal.status)) {
+				throw new ApiError(
+					"This animal is not currently available for fostering",
+					400,
+					"ANIMAL_NOT_AVAILABLE",
+				);
+			}
+
 			await fastify.db.insert(fosters).values({
-				animalId: animalId,
+				animalId,
+				userId,
 				startDate: null,
 				endDate: null,
-				userId: request.user!.id,
 				status: "applied",
 			});
 
@@ -795,20 +823,48 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 		},
 		async (request: FastifyRequest, reply: FastifyReply) => {
 			const { animalId } = request.params as { animalId: string };
+			const userId = request.user!.id;
 
 			if (!animalId) {
 				throw new ApiError("Animal ID is required", 400, "ANIMAL_ID_REQUIRED");
 			}
 
+			// Check if already applied
+			const existing = await fastify.db.query.adoptions.findFirst({
+				where: and(eq(adoptions.animalId, animalId), eq(adoptions.adopterId, userId)),
+			});
+
+			if (existing) {
+				throw new ApiError("You have already applied to adopt this animal", 409, "ALREADY_APPLIED");
+			}
+
+			// check animal is adoption_ready
+			const animal = await fastify.db.query.animals.findFirst({
+				where: eq(animals.id, animalId),
+				columns: { id: true, status: true },
+			});
+
+			if (!animal) {
+				throw new ApiError("Animal not found", 404, "ANIMAL_NOT_FOUND");
+			}
+
+			if (animal.status !== "adoption_ready") {
+				throw new ApiError(
+					"This animal is not currently available for adoption",
+					400,
+					"ANIMAL_NOT_AVAILABLE",
+				);
+			}
+
 			await fastify.db.insert(adoptions).values({
-				animalId: animalId,
+				animalId,
+				adopterId: userId,
 				applicationDate: new Date(),
 				approvalDate: null,
-				adopterId: request.user!.id,
 				matchScore: null,
 			});
 
-			return reply.success(null, "Foster application submitted successfully", 201);
+			return reply.success(null, "Adoption application submitted successfully", 201);
 		},
 	);
 
