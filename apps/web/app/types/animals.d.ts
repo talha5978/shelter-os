@@ -25,3 +25,30 @@ export type AnimalsResponse = {
 		hasPrev: boolean;
 	};
 };
+
+export type AnimalProfile = {
+	animal: {
+		id: string;
+		animalId: string;
+		name: string | null;
+		species: string;
+		breed: string | null;
+		age: string | number | null;
+		gender: string | null;
+		weight: string | number | null;
+		status: string;
+		description: string | null;
+		personality: string | null;
+		photos: MediaAsset[];
+		foundLocation: string | null;
+		rescueDate: string | null;
+		isVaccinated: boolean;
+		conditions: string[];
+		nextCheckup: string | null;
+	};
+	timeline: Array<{
+		eventType: string;
+		description: string;
+		eventDate: string;
+	}>;
+};

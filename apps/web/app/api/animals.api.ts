@@ -2,7 +2,7 @@ import type { ApiResponse } from "~/types/response";
 import { createApiClient } from "~/api/client";
 import { queryOptions } from "@tanstack/react-query";
 import { queryClient } from "~/lib/tanstackQueryClient";
-import type { AnimalsResponse } from "~/types/animals";
+import type { AnimalProfile, AnimalsResponse } from "~/types/animals";
 
 export function createAnimalsApi(client = createApiClient()) {
 	return {
@@ -31,6 +31,19 @@ export function createAnimalsApi(client = createApiClient()) {
 				queryFn: async () => {
 					return await client.request<ApiResponse<AnimalsResponse>>(
 						`/animals/public${queryParams.toString() ? `?${queryParams.toString()}` : ""}`,
+					);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
+		},
+
+		async getAnimalProfile(animalId: string) {
+			const qo = queryOptions<ApiResponse<AnimalProfile>>({
+				queryKey: [`animal_profile:${animalId}`],
+				queryFn: async () => {
+					return await client.request<ApiResponse<AnimalProfile>>(
+						`/animals/${animalId}/public-profile`,
 					);
 				},
 			});

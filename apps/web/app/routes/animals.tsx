@@ -27,7 +27,15 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 		species: speciesParam,
 	});
 
-	return { data, status: params.status };
+	const animalId = url.searchParams.get("animalId")?.trim() ?? "";
+	let animalProfile = null;
+	if (animalId) {
+		animalProfile = await animalsApi.getAnimalProfile(animalId);
+	}
+
+	// console.log(animalProfile);
+
+	return { data, status: params.status, animalProfile };
 };
 
 export default function Animals() {
@@ -77,6 +85,13 @@ export default function Animals() {
 					onPageChange={handlePageChange}
 					onSearchChange={handleSearchChange}
 					onSpeciesChange={handleSpeciesChange}
+					animalProfile={
+						loaderData?.animalProfile == null
+							? null
+							: loaderData.animalProfile.success
+								? loaderData.animalProfile.data
+								: null
+					}
 				/>
 			)}
 		</div>

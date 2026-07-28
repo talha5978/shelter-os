@@ -8,7 +8,7 @@ import {
 	type Species,
 	type Vaccine,
 } from "@workspace/db";
-import { and, asc, count, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { adminAuthMiddleware, publicAuthMiddleware, requireRole } from "~/middlewares/auth.middleware";
 import { ApiError } from "~/utils/ApiError";
@@ -584,7 +584,7 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 		},
 	);
 
-	/** Get animals to foster */
+	/** Get animals for public */
 	fastify.get(
 		"/public",
 		{
@@ -676,4 +676,86 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			);
 		},
 	);
+
+	/** Get animal public profile */
+	fastify.get("/:animalId/public-profile", async (request: FastifyRequest, reply: FastifyReply) => {
+		const { animalId } = request.params as { animalId: string };
+
+		if (!animalId) {
+			throw new ApiError("Animal ID is required", 400, "ANIMAL_ID_REQUIRED");
+		}
+
+		// 1. Get basic animal info
+		const animal = await fastify.db.query.animals.findFirst({
+			where: eq(animals.id, animalId),
+			columns: {
+				id: true,
+				animalId: true,
+				name: true,
+				species: true,
+				breed: true,
+				age: true,
+				gender: true,
+				weight: true,
+				status: true,
+				description: true,
+				personality: true,
+				photos: true,
+				videos: true,
+				foundLocation: true,
+				rescueDate: true,
+			},
+		});
+
+		if (!animal) {
+			throw new ApiError("Animal not found", 404, "ANIMAL_NOT_FOUND");
+		}
+
+		// Only allow public access for these statuses
+		if (!["foster", "adoption_ready"].includes(animal.status)) {
+			throw new ApiError("This animal is not currently available", 403, "ANIMAL_NOT_AVAILABLE");
+		}
+
+		// 2. Get simplified medical summary
+		const medicalRecord = await fastify.db.query.animalMedicalRecords.findFirst({
+			where: eq(animalMedicalRecords.animalId, animalId),
+			orderBy: (fields, { desc }) => [desc(fields.createdAt)],
+			columns: {
+				vaccines: true,
+				conditions: true,
+				nextCheckup: true,
+			},
+		});
+
+		const isVaccinated = Array.isArray(medicalRecord?.vaccines) && medicalRecord.vaccines.length > 0;
+
+		// 3. Get simplified public timeline
+		const timeline = await fastify.db
+			.select({
+				eventType: animalTimeline.eventType,
+				description: animalTimeline.description,
+				eventDate: animalTimeline.eventDate,
+			})
+			.from(animalTimeline)
+			.where(
+				and(
+					eq(animalTimeline.animalId, animalId),
+					inArray(animalTimeline.eventType, ["rescued", "intake", "vaccinated", "medical_checkup"]),
+				),
+			)
+			.orderBy(animalTimeline.eventDate);
+
+		return reply.success(
+			{
+				animal: {
+					...animal,
+					isVaccinated,
+					conditions: medicalRecord?.conditions || [],
+					nextCheckup: medicalRecord?.nextCheckup || null,
+				},
+				timeline,
+			},
+			"Animal public profile fetched successfully",
+		);
+	});
 }
