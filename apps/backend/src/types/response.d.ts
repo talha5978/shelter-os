@@ -12,3 +12,5 @@ export type ErrorResponse = {
 		details?: any;
 	};
 };
+
+export type ServiceResponse<T = any> = SuccessResponse<T> | ErrorResponse;

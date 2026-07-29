@@ -7,6 +7,7 @@ import { Link, useRevalidator } from "react-router";
 import { createAnimalsApi } from "~/api/animals.api";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 
 interface FosterRequestCardProps {
 	foster: AllFosterRequests["fosters"][number];
@@ -165,6 +166,64 @@ export function FosterRequestCard({ foster }: FosterRequestCardProps) {
 						)}
 					</div>
 				</Link>
+
+				{/* AI Match Score + Notes */}
+				{(foster.matchScore != null || foster.notes) && (
+					<div className="rounded-lg border border-border/60 bg-background p-3 space-y-2 mt-4">
+						<div className="flex items-center justify-between gap-2">
+							<p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+								AI Match
+							</p>
+
+							{foster.matchScore != null && (
+								<Badge
+									variant="outline"
+									className={`text-xs font-semibold ${
+										foster.matchScore >= 80
+											? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300"
+											: foster.matchScore >= 60
+												? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300"
+												: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-300"
+									}`}
+								>
+									{foster.matchScore}% match
+								</Badge>
+							)}
+						</div>
+
+						{/* Progress bar */}
+						{foster.matchScore != null && (
+							<div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+								<div
+									className={`h-full rounded-full transition-all ${
+										foster.matchScore >= 80
+											? "bg-emerald-500"
+											: foster.matchScore >= 60
+												? "bg-amber-500"
+												: "bg-rose-500"
+									}`}
+									style={{ width: `${Math.min(100, Math.max(0, foster.matchScore))}%` }}
+								/>
+							</div>
+						)}
+
+						{/* AI Notes / Summary */}
+						{foster.notes && (
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger>
+										<p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+											{foster.notes}
+										</p>
+									</TooltipTrigger>
+									<TooltipContent>
+										<p className="text-xs">{foster.notes}</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)}
+					</div>
+				)}
 
 				{/* Meta */}
 				<div className="flex items-center justify-between text-xs text-muted-foreground mt-3">

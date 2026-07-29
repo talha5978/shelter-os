@@ -13,6 +13,7 @@ import {
 } from "@workspace/db";
 import { and, asc, count, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { GeminiService } from "~/lib/gemini";
 import { adminAuthMiddleware, publicAuthMiddleware, requireRole } from "~/middlewares/auth.middleware";
 import { ApiError } from "~/utils/ApiError";
 
@@ -786,10 +787,7 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			}
 
 			// also check animal exists + is fosterable
-			const animal = await fastify.db.query.animals.findFirst({
-				where: eq(animals.id, animalId),
-				columns: { id: true, status: true },
-			});
+			const [animal] = await fastify.db.select().from(animals).where(eq(animals.id, animalId)).limit(1);
 
 			if (!animal) {
 				throw new ApiError("Animal not found", 404, "ANIMAL_NOT_FOUND");
@@ -803,12 +801,52 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 				);
 			}
 
+			const [userDetails] = await fastify.db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+			if (!userDetails) {
+				throw new ApiError("User not found", 404, "USER_NOT_FOUND");
+			}
+
+			const [latestMedical] = await fastify.db
+				.select({
+					conditions: animalMedicalRecords.conditions,
+				})
+				.from(animalMedicalRecords)
+				.where(eq(animalMedicalRecords.animalId, animalId))
+				.orderBy(desc(animalMedicalRecords.createdAt))
+				.limit(1);
+
+			const activeConditions = latestMedical?.conditions ?? [];
+
+			const geminiService = new GeminiService(process.env.GEMINI_API_KEY!);
+
+			const fosterMatch = await geminiService.scoreFosterRequest(
+				{
+					fosterExperience: userDetails.fosterExperience,
+					availability: userDetails.availability,
+					location: userDetails.location,
+					fullName: userDetails.fullName,
+				},
+				{
+					name: animal.name,
+					species: animal.species,
+					age: animal.age,
+					gender: animal.gender,
+					description: animal.description,
+					personality: animal.personality,
+					breed: animal.breed,
+					conditions: activeConditions,
+				},
+			);
+
 			await fastify.db.insert(fosters).values({
 				animalId,
 				userId,
 				startDate: null,
 				endDate: null,
 				status: "applied",
+				matchScore: fosterMatch.success ? fosterMatch.data.matchScore : null,
+				notes: fosterMatch.success ? fosterMatch.data.summary : null,
 			});
 
 			return reply.success(null, "Foster application submitted successfully", 201);
