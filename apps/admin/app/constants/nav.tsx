@@ -1,4 +1,4 @@
-import { LayoutDashboard, PlusCircle, PawPrint, Users, Home, Award, BarChart3 } from "lucide-react";
+import { LayoutDashboard, PlusCircle, PawPrint, Users, Home, Award } from "lucide-react";
 import type { NavItem } from "~/types/nav";
 
 export const navLinks: NavItem[] = [
@@ -26,11 +26,6 @@ export const navLinks: NavItem[] = [
 		title: "Adoptions",
 		url: "/adoptions",
 		icon: <Award size={18} />,
-	},
-	{
-		title: "Analytics",
-		url: "/analytics",
-		icon: <BarChart3 size={18} />,
 	},
 	{
 		title: "Users & Volunteers",

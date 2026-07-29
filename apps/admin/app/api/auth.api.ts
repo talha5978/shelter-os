@@ -26,7 +26,7 @@ export function createAuthApi(client = createApiClient()) {
 		},
 
 		async logout() {
-			return await client.request("/auth/signout", {
+			return await client.request("/auth/signout?isAdmin=true", {
 				method: "POST",
 				body: JSON.stringify({}),
 			});
