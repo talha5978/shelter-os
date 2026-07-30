@@ -33,9 +33,16 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 		animalProfile = await animalsApi.getAnimalProfile(animalId);
 	}
 
-	// console.log(animalProfile);
+	const recommendedAnimals = await animalsApi.getRecommendedAnimals();
+	if (recommendedAnimals.success) {
+		for (let i = 0; i < recommendedAnimals.data.recommended.length; i++) {
+			recommendedAnimals.data.recommended[i] = recommendedAnimals.data.recommended[i];
+		}
+	}
 
-	return { data, status: params.status, animalProfile };
+	// console.dir(recommendedAnimals.success ? recommendedAnimals.data.recommended.length + " FOUND...." : "NO FUCKING DATA FOUND");
+
+	return { data, status: params.status, animalProfile, recommendedAnimals };
 };
 
 export default function Animals() {
@@ -91,6 +98,11 @@ export default function Animals() {
 							: loaderData.animalProfile.success
 								? loaderData.animalProfile.data
 								: null
+					}
+					recommendedAnimals={
+						loaderData?.recommendedAnimals.success
+							? loaderData.recommendedAnimals.data.recommended
+							: []
 					}
 				/>
 			)}

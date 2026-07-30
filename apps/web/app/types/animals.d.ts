@@ -52,3 +52,24 @@ export type AnimalProfile = {
 		eventDate: string;
 	}>;
 };
+
+export type RecommendedAnimal = {
+	matchScore: number;
+	matchSummary: string | null;
+	recommendation: "strong" | "moderate" | "weak" | "not_recommended";
+	strengths: string[];
+	concerns: string[];
+	id: string;
+	animalId: string;
+	name: string | null;
+	species: "dog" | "cat" | "bird" | "rabbit" | "reptile" | "other";
+	breed: string | null;
+	age: string | null;
+	gender: "male" | "female" | "unknown" | null;
+	weight: string | null;
+	description: string | null;
+	personality: string | null;
+	photos: MediaAsset[] | null;
+	status: AnimalStatus;
+	foundLocation: string | null;
+};

@@ -2,7 +2,7 @@ import type { ApiResponse } from "~/types/response";
 import { createApiClient } from "~/api/client";
 import { queryOptions } from "@tanstack/react-query";
 import { queryClient } from "~/lib/tanstackQueryClient";
-import type { AnimalProfile, AnimalsResponse } from "~/types/animals";
+import type { AnimalProfile, AnimalsResponse, RecommendedAnimal } from "~/types/animals";
 
 export function createAnimalsApi(client = createApiClient()) {
 	return {
@@ -63,6 +63,25 @@ export function createAnimalsApi(client = createApiClient()) {
 				method: "POST",
 				body: JSON.stringify({}),
 			});
+		},
+
+		async getRecommendedAnimals() {
+			const qo = queryOptions<
+				ApiResponse<{
+					recommended: RecommendedAnimal[];
+				}>
+			>({
+				queryKey: ["recommended_animals"],
+				queryFn: async () => {
+					return await client.request<
+						ApiResponse<{
+							recommended: RecommendedAnimal[];
+						}>
+					>(`/animals/recommended`);
+				},
+			});
+
+			return await queryClient.fetchQuery(qo);
 		},
 	};
 }

@@ -1192,4 +1192,115 @@ export async function animalsRoutes(fastify: FastifyInstance) {
 			return reply.success(null, "Adoption request approved successfully");
 		},
 	);
+
+	/** Get recommended animals */
+	fastify.get(
+		"/recommended",
+		{
+			preHandler: [publicAuthMiddleware, requireRole(["foster_volunteer", "adopter"])],
+		},
+		async (request: FastifyRequest, reply: FastifyReply) => {
+			const userId = request.user!.id;
+
+			const [userDetails] = await fastify.db.select().from(users).where(eq(users.id, userId)).limit(1);
+
+			if (!userDetails) {
+				throw new ApiError("User not found", 404, "USER_NOT_FOUND");
+			}
+
+			// 2. Get first 15 fosterable animals (newest first)
+			const fosterAnimals = await fastify.db
+				.select({
+					id: animals.id,
+					animalId: animals.animalId,
+					name: animals.name,
+					species: animals.species,
+					breed: animals.breed,
+					age: animals.age,
+					gender: animals.gender,
+					weight: animals.weight,
+					description: animals.description,
+					personality: animals.personality,
+					photos: animals.photos,
+					status: animals.status,
+					foundLocation: animals.foundLocation,
+				})
+				.from(animals)
+				.where(or(eq(animals.status, "foster"), eq(animals.status, "adoption_ready")))
+				.orderBy(desc(animals.createdAt))
+				.limit(15);
+
+			if (fosterAnimals.length === 0) {
+				return reply.success({ recommended: [] }, "No fosterable animals available right now");
+			}
+
+			const animalIds = fosterAnimals.map((a) => a.id);
+
+			const medicalRows = await fastify.db
+				.select({
+					animalId: animalMedicalRecords.animalId,
+					conditions: animalMedicalRecords.conditions,
+					createdAt: animalMedicalRecords.createdAt,
+				})
+				.from(animalMedicalRecords)
+				.where(inArray(animalMedicalRecords.animalId, animalIds))
+				.orderBy(desc(animalMedicalRecords.createdAt));
+
+			// Keep only the latest medical record per animal
+			const latestConditionsMap = new Map<string, string[]>();
+			for (const row of medicalRows) {
+				if (!latestConditionsMap.has(row.animalId)) {
+					latestConditionsMap.set(row.animalId, row.conditions || []);
+				}
+			}
+
+			// 4. Score each animal with Gemini
+			const geminiService = new GeminiService(process.env.GEMINI_API_KEY!);
+
+			const batchInput = fosterAnimals.map((animal) => ({
+				id: animal.id,
+				name: animal.name,
+				species: animal.species,
+				breed: animal.breed,
+				age: animal.age,
+				gender: animal.gender,
+				description: animal.description,
+				personality: animal.personality,
+				status: animal.status,
+				conditions: latestConditionsMap.get(animal.id) || [],
+			}));
+
+			const scoreResult = await geminiService.scoreFosterRequestBatch(
+				{
+					fullName: userDetails.fullName,
+					availability: userDetails.availability,
+					location: userDetails.location,
+					fosterExperience: userDetails.fosterExperience,
+				},
+				batchInput,
+			);
+
+			if (!scoreResult.success) {
+				throw new ApiError("Failed to generate recommendations", 500, "SCORING_FAILED");
+			}
+
+			const scoreMap = new Map(scoreResult.data.map((s) => [s.animalId, s]));
+
+			const recommended = fosterAnimals
+				.map((animal) => {
+					const score = scoreMap.get(animal.id);
+					return {
+						...animal,
+						matchScore: score?.matchScore ?? 0,
+						matchSummary: score?.summary ?? null,
+						recommendation: score?.recommendation ?? "weak",
+						strengths: score?.strengths ?? [],
+						concerns: score?.concerns ?? [],
+					};
+				})
+				.sort((a, b) => b.matchScore - a.matchScore);
+
+			return reply.success({ recommended }, "Recommended animals fetched successfully");
+		},
+	);
 }

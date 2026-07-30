@@ -7,7 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "~/components/ui/card"
 import { Badge } from "~/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { Checkbox } from "~/components/ui/checkbox";
-import type { AnimalProfile, AnimalsResponse } from "~/types/animals";
+import type { AnimalProfile, AnimalsResponse, RecommendedAnimal } from "~/types/animals";
 import type { Species } from "@workspace/db";
 import AnimalProfileSheet from "~/components/AnimalsProfile";
 
@@ -17,6 +17,7 @@ interface AnimalsGridProps {
 	onSearchChange?: (search: string) => void;
 	onSpeciesChange?: (species: Species[]) => void;
 	animalProfile: AnimalProfile | null;
+	recommendedAnimals: RecommendedAnimal[];
 }
 
 const SPECIES_OPTIONS: { label: string; value: Species }[] = [
@@ -33,6 +34,7 @@ export default function AnimalsGrid({
 	onSearchChange,
 	onSpeciesChange,
 	animalProfile,
+	recommendedAnimals,
 }: AnimalsGridProps) {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [selectedSpecies, setSelectedSpecies] = useState<Species[]>([]);
@@ -66,6 +68,132 @@ export default function AnimalsGrid({
 	return (
 		<>
 			<div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+				<div>
+					<h2 className="text-3xl font-bold tracking-tight">Available Animals</h2>
+					<p className="text-sm text-muted-foreground">Browse every animal currently available</p>
+				</div>
+				{/* ================= RECOMMENDED FOR YOU ================= */}
+				{recommendedAnimals && recommendedAnimals.length > 0 && (
+					<section className="space-y-4">
+						<div className="flex items-end justify-between gap-3">
+							<div>
+								<p className="text-xs font-semibold uppercase tracking-wider text-primary">
+									AI Matched
+								</p>
+								<h2 className="text-xl font-bold tracking-tight">Recommended for You</h2>
+								<p className="text-sm text-muted-foreground">
+									Based on your foster profile and preferences
+								</p>
+							</div>
+						</div>
+
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+							{recommendedAnimals.slice(0, 4).map((animal) => {
+								const mainPhoto = animal.photos?.[0]?.url || null;
+
+								const scoreColor =
+									animal.matchScore >= 80
+										? "bg-emerald-500 text-white"
+										: animal.matchScore >= 60
+											? "bg-amber-500 text-white"
+											: "bg-rose-500 text-white";
+
+								return (
+									<Card
+										key={`rec-${animal.id}`}
+										className="overflow-hidden group border-border hover:shadow-md transition-all duration-300 pt-0 pb-2 flex flex-col"
+									>
+										{/* Image */}
+										<div className="relative aspect-4/3 bg-muted overflow-hidden">
+											{mainPhoto ? (
+												<img
+													src={mainPhoto}
+													alt={animal.name || "Animal"}
+													className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+												/>
+											) : (
+												<div className="w-full h-full flex items-center justify-center">
+													<PawPrint className="w-10 h-10 text-muted-foreground/50" />
+												</div>
+											)}
+
+											{/* Match score badge */}
+											<div className="absolute top-3 right-3">
+												<Badge className={`shadow-xs font-semibold ${scoreColor}`}>
+													{animal.matchScore}% match
+												</Badge>
+											</div>
+
+											<div className="absolute top-3 left-3">
+												<Badge className="bg-background/90 text-foreground border border-border shadow-xs font-semibold">
+													{animal.species.toUpperCase()}
+												</Badge>
+											</div>
+										</div>
+
+										{/* Content */}
+										<div className="p-4 space-y-2 flex-1">
+											<div>
+												<h3 className="font-bold text-lg leading-tight line-clamp-1">
+													{animal.name || "Unnamed Companion"}
+												</h3>
+												<p className="text-xs text-muted-foreground mt-0.5">
+													{animal.breed || "Mixed Breed"}
+													{animal.gender ? ` • ${animal.gender}` : ""}
+													{animal.age ? ` • ${animal.age} yrs` : ""}
+												</p>
+											</div>
+
+											{animal.matchSummary && (
+												<p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+													{animal.matchSummary}
+												</p>
+											)}
+
+											{animal.strengths?.length > 0 && (
+												<div className="flex flex-wrap gap-1.5 pt-1">
+													{animal.strengths.slice(0, 2).map((s, i) => (
+														<Badge
+															key={i}
+															variant="secondary"
+															className="text-[10px] font-medium"
+														>
+															{s}
+														</Badge>
+													))}
+												</div>
+											)}
+										</div>
+
+										{/* CTA */}
+										<div className="px-4 pb-3">
+											<Button
+												size="sm"
+												className="w-full gap-2 cursor-pointer"
+												onClick={() => {
+													const q = searchParams.get("q");
+													const page = searchParams.get("page");
+													setSearchParams(
+														{
+															...(q && { q }),
+															...(page && { page }),
+															animalId: String(animal.id),
+														},
+														{ state: { suppressLoadingBar: true } },
+													);
+													setOpen(true);
+												}}
+											>
+												<PawPrint className="w-4 h-4" />
+												View Profile
+											</Button>
+										</div>
+									</Card>
+								);
+							})}
+						</div>
+					</section>
+				)}
 				{/* SEARCH AND MULTI-SELECT FILTERS BAR */}
 				<div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center justify-between bg-card p-4 rounded-xl border border-border shadow-xs">
 					{/* Search Bar */}
