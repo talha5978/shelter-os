@@ -132,7 +132,7 @@ export async function authRoutes(fastify: FastifyInstance) {
 				throw new ApiError("Invalid credentials.", 401, "INVALID_CREDENTIALS");
 			}
 
-			if (user.role && user.role !== "admin") {
+			if (user.role && user.role !== "admin" && user.role !== "shelter_staff") {
 				throw new ApiError("You are not allowed to sign in", 404, "INVALID_DATA");
 			}
 

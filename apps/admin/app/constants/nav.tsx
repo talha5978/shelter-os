@@ -31,5 +31,6 @@ export const navLinks: NavItem[] = [
 		title: "Users & Volunteers",
 		url: "/users",
 		icon: <Users size={18} />,
+		allowedRoles: ["admin"],
 	},
 ];

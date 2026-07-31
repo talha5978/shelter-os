@@ -7,15 +7,23 @@ import {
 	SidebarMenuItem,
 } from "~/components/ui/sidebar";
 import { navLinks } from "~/constants/nav";
+import useAuth from "~/hooks/useAuth";
 
 export function NavMain() {
 	const location = useLocation();
+	const { user } = useAuth();
+	const userRole = user?.role ?? "shelter_staff";
+
+	const visibleLinks = navLinks.filter((item) => {
+		if (!item.allowedRoles) return true;
+		return item.allowedRoles.includes(userRole);
+	});
 
 	return (
 		<SidebarGroup>
 			<SidebarGroupContent className="flex flex-col gap-2">
 				<SidebarMenu className="flex flex-col gap-2">
-					{navLinks.map((item) => {
+					{visibleLinks.map((item) => {
 						const resolved = useResolvedPath(item.url).pathname;
 						let isActive = location.pathname === resolved;
 
