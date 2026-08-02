@@ -9,7 +9,7 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
 
 # App + shared packages package.json only
-COPY apps/admin/package.json ./apps/admin/package.json
+COPY apps/backend/package.json ./apps/backend/package.json
 COPY packages/db/package.json ./packages/db/package.json
 COPY packages/auth/package.json ./packages/auth/package.json
 
@@ -19,17 +19,17 @@ RUN pnpm install --frozen-lockfile
 FROM base AS build
 
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/admin/node_modules ./apps/admin/node_modules
+COPY --from=deps /app/apps/backend/node_modules ./apps/backend/node_modules
 
 # Root config files
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json tsconfig.json ./
 
 # Source
-COPY apps/admin ./apps/admin
+COPY apps/backend ./apps/backend
 COPY packages ./packages
 
-# Build admin (+ dependency packages via turbo)
-RUN pnpm admin:build
+# Build backend (+ dependency packages via turbo)
+RUN pnpm backend:build
 
 # ---- Production runner ----
 FROM node:24-alpine AS runner
@@ -43,9 +43,9 @@ RUN corepack enable
 
 COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml /app/turbo.json /app/tsconfig.json ./
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/apps/admin ./apps/admin
+COPY --from=build /app/apps/backend ./apps/backend
 COPY --from=build /app/packages ./packages
 
 EXPOSE 3001
 
-CMD ["pnpm", "admin:start"]
+CMD ["pnpm", "backend:start"]

@@ -280,7 +280,7 @@ export default function AdminUsersPage() {
 							<div className="relative">
 								<Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
 								<Input
-									placeholder="Search by name, email or student ID..."
+									placeholder="Search by name, email or user ID..."
 									name="q"
 									className="pl-10 min-w-md"
 								/>

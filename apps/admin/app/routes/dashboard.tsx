@@ -17,6 +17,7 @@ import {
 	AreaChart,
 	CartesianGrid,
 	Cell,
+	Legend,
 	Pie,
 	PieChart,
 	ResponsiveContainer,
@@ -46,13 +47,45 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 // Chart Colors aligned with a professional dark/light zinc theme
 const STATUS_COLORS = {
-	rescued: "#71717a", // zinc-500
-	intake: "#d4d4d8", // zinc-300
-	medical: "#f43f5e", // rose-500
-	foster: "#3b82f6", // blue-500
-	adoption_ready: "#10b981", // emerald-500
-	adopted: "#18181b", // zinc-900 (or zinc-50 in dark mode handled via CSS if needed, forcing distinct hex here)
+	rescued: "#a1a1aa", // zinc-400 — neutral start
+	intake: "#38bdf8", // sky-400 — intake / new arrival
+	medical: "#f59e0b", // amber-500 — needs attention
+	foster: "#8b5cf6", // violet-500 — temporary care
+	adoption_ready: "#10b981", // emerald-500 — ready / positive
+	adopted: "#f43f5e", // rose-500 — success / forever home
 };
+
+function buildDemoStatusOverTime() {
+	const today = new Date();
+	const days = 14;
+
+	// small realistic daily activity
+	const pattern = [
+		{ rescued: 1, intake: 1, medical: 2, foster: 0, adoption_ready: 1, adopted: 0 },
+		{ rescued: 0, intake: 0, medical: 0, foster: 1, adoption_ready: 0, adopted: 0 },
+		{ rescued: 2, intake: 2, medical: 3, foster: 0, adoption_ready: 1, adopted: 0 },
+		{ rescued: 0, intake: 0, medical: 1, foster: 0, adoption_ready: 0, adopted: 1 },
+		{ rescued: 1, intake: 1, medical: 3, foster: 1, adoption_ready: 1, adopted: 0 },
+		{ rescued: 0, intake: 0, medical: 1, foster: 0, adoption_ready: 0, adopted: 0 },
+		{ rescued: 1, intake: 1, medical: 0, foster: 1, adoption_ready: 1, adopted: 0 },
+		{ rescued: 1, intake: 1, medical: 2, foster: 0, adoption_ready: 0, adopted: 1 },
+		{ rescued: 1, intake: 1, medical: 2, foster: 0, adoption_ready: 0, adopted: 0 },
+		{ rescued: 0, intake: 0, medical: 3, foster: 1, adoption_ready: 0, adopted: 0 },
+		{ rescued: 2, intake: 2, medical: 1, foster: 0, adoption_ready: 1, adopted: 0 },
+		{ rescued: 0, intake: 1, medical: 2, foster: 1, adoption_ready: 0, adopted: 0 },
+		{ rescued: 1, intake: 0, medical: 1, foster: 0, adoption_ready: 1, adopted: 0 },
+		{ rescued: 0, intake: 1, medical: 0, foster: 0, adoption_ready: 1, adopted: 1 },
+	];
+
+	return Array.from({ length: days }, (_, i) => {
+		const d = new Date(today);
+		d.setDate(today.getDate() - (days - 1 - i));
+		return {
+			date: d.toISOString().slice(0, 10),
+			...pattern[i],
+		};
+	});
+}
 
 export default function Dashboard() {
 	const loaderData = useLoaderData<typeof loader>();
@@ -64,9 +97,25 @@ export default function Dashboard() {
 	}
 
 	// Prepare pie chart data
-	const pieData = Object.entries(data.animalsByStatus)
-		.filter(([_, value]) => value > 0)
-		.map(([name, value]) => ({ name, value }));
+	// const pieData = Object.entries(data.animalsByStatus)
+	// 	.filter(([_, value]) => value > 0)
+	// 	.map(([name, value]) => ({ name, value }));
+
+	const pieData = [
+		{ name: "rescued", value: 10 },
+		{ name: "intake", value: 10 },
+		{ name: "medical", value: 15 },
+		{ name: "foster", value: 5 },
+		{ name: "adoption_ready", value: 7 },
+		{ name: "adopted", value: 3 },
+	];
+
+	// const chartData = data.statusOverTime?.some(
+	// 	(d) => d.rescued || d.intake || d.medical || d.foster || d.adoption_ready || d.adopted,
+	// )
+	// 	? data.statusOverTime
+	// 	: buildDemoStatusOverTime();
+	const chartData = buildDemoStatusOverTime();
 
 	return (
 		<div className="flex-1 space-y-6 p-6 max-w-7xl mx-auto">
@@ -146,40 +195,14 @@ export default function Dashboard() {
 						<div className="h-75 w-full mt-4">
 							<ResponsiveContainer width="100%" height="100%">
 								<AreaChart
-									data={data.statusOverTime}
+									data={chartData}
 									margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
 								>
-									<defs>
-										<linearGradient id="colorAdopted" x1="0" y1="0" x2="0" y2="1">
-											<stop
-												offset="5%"
-												stopColor={STATUS_COLORS.adopted}
-												stopOpacity={0.3}
-											/>
-											<stop
-												offset="95%"
-												stopColor={STATUS_COLORS.adopted}
-												stopOpacity={0}
-											/>
-										</linearGradient>
-										<linearGradient id="colorReady" x1="0" y1="0" x2="0" y2="1">
-											<stop
-												offset="5%"
-												stopColor={STATUS_COLORS.adoption_ready}
-												stopOpacity={0.3}
-											/>
-											<stop
-												offset="95%"
-												stopColor={STATUS_COLORS.adoption_ready}
-												stopOpacity={0}
-											/>
-										</linearGradient>
-									</defs>
 									<CartesianGrid
 										strokeDasharray="3 3"
 										vertical={false}
 										stroke="#3f3f46"
-										opacity={0.2}
+										opacity={0.3}
 									/>
 									<XAxis
 										dataKey="date"
@@ -220,25 +243,57 @@ export default function Dashboard() {
 												: "Date"
 										}
 									/>
-									<Area
-										type="monotone"
-										dataKey="adopted"
-										stroke={STATUS_COLORS.adopted}
-										fillOpacity={1}
-										fill="url(#colorAdopted)"
+									<Legend
+										verticalAlign="top"
+										align="right"
+										height={32}
+										iconType="square"
+										wrapperStyle={{ fontSize: 12, marginBottom: 8 }}
+										formatter={(value) =>
+											String(value).replaceAll("_", " ").toUpperCase()
+										}
 									/>
 									<Area
 										type="monotone"
-										dataKey="adoption_ready"
-										stroke={STATUS_COLORS.adoption_ready}
-										fillOpacity={1}
-										fill="url(#colorReady)"
+										dataKey="rescued"
+										stroke={STATUS_COLORS.rescued}
+										fillOpacity={0}
+										strokeWidth={2}
 									/>
 									<Area
 										type="monotone"
 										dataKey="intake"
 										stroke={STATUS_COLORS.intake}
 										fillOpacity={0}
+										strokeWidth={2}
+									/>
+									<Area
+										type="monotone"
+										dataKey="medical"
+										stroke={STATUS_COLORS.medical}
+										fillOpacity={0}
+										strokeWidth={2}
+									/>
+									<Area
+										type="monotone"
+										dataKey="foster"
+										stroke={STATUS_COLORS.foster}
+										fillOpacity={0}
+										strokeWidth={2}
+									/>
+									<Area
+										type="monotone"
+										dataKey="adopted"
+										stroke={STATUS_COLORS.adopted}
+										fillOpacity={0}
+										strokeWidth={2}
+									/>
+									<Area
+										type="monotone"
+										dataKey="adoption_ready"
+										stroke={STATUS_COLORS.adoption_ready}
+										fillOpacity={0}
+										strokeWidth={2}
 									/>
 								</AreaChart>
 							</ResponsiveContainer>
@@ -268,10 +323,7 @@ export default function Dashboard() {
 										{pieData.map((entry, index) => (
 											<Cell
 												key={`cell-${index}`}
-												fill={
-													STATUS_COLORS[entry.name as keyof typeof STATUS_COLORS] ||
-													"#71717a"
-												}
+												fill={STATUS_COLORS[entry.name as keyof typeof STATUS_COLORS]}
 											/>
 										))}
 									</Pie>
