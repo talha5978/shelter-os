@@ -97,25 +97,25 @@ export default function Dashboard() {
 	}
 
 	// Prepare pie chart data
-	// const pieData = Object.entries(data.animalsByStatus)
-	// 	.filter(([_, value]) => value > 0)
-	// 	.map(([name, value]) => ({ name, value }));
+	const pieData = Object.entries(data.animalsByStatus)
+		.filter(([_, value]) => value > 0)
+		.map(([name, value]) => ({ name, value }));
 
-	const pieData = [
-		{ name: "rescued", value: 10 },
-		{ name: "intake", value: 10 },
-		{ name: "medical", value: 15 },
-		{ name: "foster", value: 5 },
-		{ name: "adoption_ready", value: 7 },
-		{ name: "adopted", value: 3 },
-	];
+	// const pieData = [
+	// 	{ name: "rescued", value: 10 },
+	// 	{ name: "intake", value: 10 },
+	// 	{ name: "medical", value: 15 },
+	// 	{ name: "foster", value: 5 },
+	// 	{ name: "adoption_ready", value: 7 },
+	// 	{ name: "adopted", value: 3 },
+	// ];
 
-	// const chartData = data.statusOverTime?.some(
-	// 	(d) => d.rescued || d.intake || d.medical || d.foster || d.adoption_ready || d.adopted,
-	// )
-	// 	? data.statusOverTime
-	// 	: buildDemoStatusOverTime();
-	const chartData = buildDemoStatusOverTime();
+	const chartData = data.statusOverTime?.some(
+		(d) => d.rescued || d.intake || d.medical || d.foster || d.adoption_ready || d.adopted,
+	)
+		? data.statusOverTime
+		: buildDemoStatusOverTime();
+	// const chartData = buildDemoStatusOverTime();
 
 	return (
 		<div className="flex-1 space-y-6 p-6 max-w-7xl mx-auto">
